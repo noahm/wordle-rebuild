@@ -1,3 +1,4 @@
+import { useCallback, useReducer } from "react";
 import styled, { keyframes } from "styled-components";
 import { times } from "../lib/utils";
 import Tile from "./tile";
@@ -66,21 +67,63 @@ interface Props {
   length: number;
   win?: boolean;
   invalid?: boolean;
+  onAnimEnd?: () => void;
+}
+
+interface State {
+  revealed?: number;
+  anim: "reveal" | "bounce" | "shake" | "idle";
+}
+
+type Action = "tileRevealed" | "animEnd";
+
+function reducer(s: State, action: Action): State {
+  switch (action) {
+    case "tileRevealed":
+      if (s.revealed === 4) {
+        return { anim: "bounce", revealed: 5 };
+      }
+      return { anim: "reveal", revealed: (s.revealed || 0) + 1 };
+    case "animEnd":
+      return { ...s, anim: "idle" };
+  }
+}
+
+function initialState(p: Props): State {
+  if (p.invalid) {
+    return { anim: "shake" };
+  }
+  if (p.win) {
+    return { anim: "reveal" };
+  }
+  return { anim: "idle" };
 }
 
 export default function Row(props: Props) {
-  let anim = "";
-  if (props.invalid) {
-    anim = "shake";
-  }
-  if (props.win) {
-    anim = "bounce";
-  }
+  const [state, dispatch] = useReducer(reducer, initialState(props));
+  console.log(state);
+  const handleTileReveal = useCallback(() => {
+    console.log("tile anim end");
+    dispatch("tileRevealed");
+  }, []);
+  const handleRowAnim = useCallback((e) => {
+    if (e.currentTarget === e.target) {
+      dispatch("animEnd");
+      props.onAnimEnd && props.onAnimEnd();
+    }
+  }, []);
+  const revealIdx = state.revealed || 0;
   return (
     <div>
-      <RowDiv className={anim}>
+      <RowDiv className={state.anim} onAnimationEnd={handleRowAnim}>
         {times(props.length, (i) => (
-          <Tile key={i} letter={props.letters[i]} />
+          <Tile
+            key={i}
+            letter={props.letters[i]}
+            reveal={props.win && i <= revealIdx}
+            evaluation={props.win && i < revealIdx ? "correct" : undefined}
+            onAnimationEnd={handleTileReveal}
+          />
         ))}
       </RowDiv>
     </div>

@@ -1,5 +1,4 @@
-import { useState } from "react";
-import styled, { keyframes } from "styled-components";
+import styled, { keyframes, css } from "styled-components";
 
 const PopIn = keyframes`
 from {
@@ -70,16 +69,22 @@ const TileDiv = styled.div<DivProps>`
   ${(props) => {
     switch (props.animation) {
       case "pop":
-        return `animation-name: ${PopIn};
-        animation-duration: 100ms;`;
+        return css`
+          animation-name: ${PopIn};
+          animation-duration: 100ms;
+        `;
       case "flipin":
-        return `animation-name: ${FlipIn};
-        animation-duration: 250ms;
-        animation-timing-function: ease-in;`;
+        return css`
+          animation-name: ${FlipIn};
+          animation-duration: 250ms;
+          animation-timing-function: ease-in;
+        `;
       case "flipout":
-        return `animation-name: ${FlipOut};
-        animation-duration: 250ms;
-        animation-timing-function: ease-in;`;
+        return css`
+          animation-name: ${FlipOut};
+          animation-duration: 250ms;
+          animation-timing-function: ease-in;
+        `;
       default:
         return "";
     }
@@ -106,15 +111,15 @@ interface Props {
 }
 
 export default function Tile(props: Props) {
-  const [evalState, setEvalState] = useState<DivProps["state"]>("tbd");
-  const [animState, setAnimState] = useState<DivProps["animation"]>(
-    props.reveal ? "flipin" : "idle"
-  );
+  let evalState: DivProps["state"] = "tbd";
+  if (props.evaluation) {
+    evalState = props.evaluation;
+  }
   return (
     <Host>
       <TileDiv
         state={evalState}
-        animation={animState}
+        animation={props.reveal ? "flipin" : "idle"}
         onAnimationEnd={props.onAnimationEnd}
       >
         {props.letter}

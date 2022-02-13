@@ -63,7 +63,7 @@ export default function Game() {
           <Row letters="julie" length={5} />
           <Row letters="  i" length={5} />
           <Row letters="heart" length={5} />
-          <Row letters=" you" length={5} />
+          <Row letters=" you" length={5} win />
           <Row letters="" length={5} />
         </Board>
       </BoardContainer>
