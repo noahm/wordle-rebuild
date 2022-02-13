@@ -1,3 +1,5 @@
+import { useCallback, useState } from "react";
+import { usePreviousImmediate } from "rooks";
 import styled, { keyframes, css } from "styled-components";
 
 const PopIn = keyframes`
@@ -112,15 +114,46 @@ interface Props {
 
 export default function Tile(props: Props) {
   let evalState: DivProps["state"] = "tbd";
+  let initialAnim: DivProps["animation"] = "idle";
   if (props.evaluation) {
     evalState = props.evaluation;
+    if (props.reveal) {
+      initialAnim = "flipin";
+    }
+  } else {
+    if (props.letter) {
+      initialAnim = "pop";
+    } else {
+      evalState = "empty";
+    }
   }
+  const [anim, setAnim] = useState<DivProps["animation"]>(initialAnim);
+  const handleAnimEnd = useCallback(() => {
+    switch (anim) {
+      case "flipout":
+      case "pop":
+        setAnim("idle");
+        break;
+      case "idle":
+        if (!props.reveal) break;
+      case "flipin":
+        setAnim("flipout");
+        props.onAnimationEnd && props.onAnimationEnd();
+        break;
+    }
+  }, [props.onAnimationEnd, anim]);
+  const prevReveal = usePreviousImmediate(props.reveal);
+  if (!prevReveal && props.reveal && anim === "idle") {
+    setAnim("flipin");
+  }
+
   return (
     <Host>
       <TileDiv
-        state={evalState}
-        animation={props.reveal ? "flipin" : "idle"}
-        onAnimationEnd={props.onAnimationEnd}
+        key={props.letter}
+        state={anim === "flipin" ? "tbd" : evalState}
+        animation={anim}
+        onAnimationEnd={handleAnimEnd}
       >
         {props.letter}
       </TileDiv>

@@ -101,7 +101,6 @@ function initialState(p: Props): State {
 
 export default function Row(props: Props) {
   const [state, dispatch] = useReducer(reducer, initialState(props));
-  console.log(state);
   const handleTileReveal = useCallback(() => {
     console.log("tile anim end");
     dispatch("tileRevealed");
@@ -121,7 +120,7 @@ export default function Row(props: Props) {
             key={i}
             letter={props.letters[i]}
             reveal={props.win && i <= revealIdx}
-            evaluation={props.win && i < revealIdx ? "correct" : undefined}
+            evaluation={props.win && i <= revealIdx ? "correct" : undefined}
             onAnimationEnd={handleTileReveal}
           />
         ))}
