@@ -38,7 +38,6 @@ export default class MyDocument extends Document {
     return (
       <Html>
         <Head>
-          <title>Wordle*</title>
           <style
             dangerouslySetInnerHTML={{
               __html: `

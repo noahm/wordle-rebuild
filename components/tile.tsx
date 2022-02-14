@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { usePreviousImmediate } from "rooks";
 import styled, { keyframes, css } from "styled-components";
+import { Evaluation } from "../lib/logic";
 
 const PopIn = keyframes`
 from {
@@ -107,21 +108,26 @@ const TileDiv = styled.div<DivProps>`
 
 interface Props {
   letter?: string;
-  evaluation?: "correct" | "present" | "absent";
+  evaluation?: Evaluation;
   reveal?: boolean;
   onAnimationEnd?: () => void;
 }
 
-export default function Tile(props: Props) {
+export default function Tile({
+  evaluation,
+  letter,
+  onAnimationEnd,
+  reveal,
+}: Props) {
   let evalState: DivProps["state"] = "tbd";
   let initialAnim: DivProps["animation"] = "idle";
-  if (props.evaluation) {
-    evalState = props.evaluation;
-    if (props.reveal) {
+  if (evaluation) {
+    evalState = evaluation;
+    if (reveal) {
       initialAnim = "flipin";
     }
   } else {
-    if (props.letter) {
+    if (letter) {
       initialAnim = "pop";
     } else {
       evalState = "empty";
@@ -135,27 +141,26 @@ export default function Tile(props: Props) {
         setAnim("idle");
         break;
       case "idle":
-        if (!props.reveal) break;
+        if (!reveal) break;
       case "flipin":
         setAnim("flipout");
-        props.onAnimationEnd && props.onAnimationEnd();
+        onAnimationEnd && onAnimationEnd();
         break;
     }
-  }, [props.onAnimationEnd, anim]);
-  const prevReveal = usePreviousImmediate(props.reveal);
-  if (!prevReveal && props.reveal && anim === "idle") {
+  }, [anim, reveal, onAnimationEnd]);
+  const prevReveal = usePreviousImmediate(reveal);
+  if (!prevReveal && reveal && anim === "idle") {
     setAnim("flipin");
   }
 
   return (
     <Host>
       <TileDiv
-        key={props.letter}
         state={anim === "flipin" ? "tbd" : evalState}
         animation={anim}
         onAnimationEnd={handleAnimEnd}
       >
-        {props.letter}
+        {letter}
       </TileDiv>
     </Host>
   );

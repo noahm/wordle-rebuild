@@ -1,4 +1,7 @@
+import { useCallback, MouseEvent } from "react";
+import { useFreshTick, useWindowEventListener } from "rooks";
 import styled from "styled-components";
+import { useGameDispatch } from "../lib/actions";
 import Icon from "./icon";
 
 const Root = styled.div`
@@ -82,6 +85,7 @@ const Spacer = styled.div`
   flex: 0.5;
 `;
 
+const alphabet = "abcdefghijklmnopqrstuvwxyz";
 const layout = [
   ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
   ["-", "a", "s", "d", "f", "g", "h", "j", "k", "l", "-"],
@@ -105,16 +109,42 @@ function classForKey(key: string) {
 }
 
 export default function Keyboard() {
+  const dispatch = useGameDispatch();
+  const respondToKey = useFreshTick((key: string) => {
+    if (key === "↵" || key === "enter") {
+      dispatch({ type: "guess" });
+    } else if (key === "←" || key === "backspace") {
+      dispatch({ type: "del" });
+    } else if (key.length === 1 && alphabet.includes(key)) {
+      dispatch({ type: "add", letter: key });
+    }
+  });
+  const handleKeyPress = useCallback(
+    (e: MouseEvent<Element>) => {
+      const keyButton = (e.target as Element).closest("button");
+      if (keyButton) {
+        respondToKey(keyButton.dataset.key);
+      }
+    },
+    [respondToKey]
+  );
+  useWindowEventListener("keydown", (e: KeyboardEvent) => {
+    if (e.repeat || e.metaKey || e.ctrlKey) {
+      return;
+    }
+    respondToKey(e.key.toLowerCase());
+  });
+
   return (
     <Root>
-      <Container>
+      <Container onClick={handleKeyPress}>
         {layout.map((row, idx) => (
           <Row key={idx}>
             {row.map((key, jdx) =>
               key === "-" ? (
                 <Spacer key={jdx} />
               ) : (
-                <Button key={key} className={classForKey(key)}>
+                <Button key={key} data-key={key} className={classForKey(key)}>
                   {labelForKey(key)}
                 </Button>
               )

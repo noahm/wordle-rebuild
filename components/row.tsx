@@ -1,5 +1,6 @@
 import { useCallback, useReducer } from "react";
 import styled, { keyframes } from "styled-components";
+import { Evaluation } from "../lib/logic";
 import { times } from "../lib/utils";
 import Tile from "./tile";
 
@@ -63,8 +64,9 @@ const RowDiv = styled.div`
 `;
 
 interface Props {
-  letters: string;
+  letters?: string;
   length: number;
+  evaluations?: Evaluation[];
   win?: boolean;
   invalid?: boolean;
   onAnimEnd?: () => void;
@@ -99,28 +101,36 @@ function initialState(p: Props): State {
   return { anim: "idle" };
 }
 
-export default function Row(props: Props) {
+export default function Row({ onAnimEnd, ...props }: Props) {
   const [state, dispatch] = useReducer(reducer, initialState(props));
   const handleTileReveal = useCallback(() => {
     console.log("tile anim end");
     dispatch("tileRevealed");
   }, []);
-  const handleRowAnim = useCallback((e) => {
-    if (e.currentTarget === e.target) {
-      dispatch("animEnd");
-      props.onAnimEnd && props.onAnimEnd();
-    }
-  }, []);
+  const handleRowAnim = useCallback(
+    (e) => {
+      if (e.currentTarget === e.target) {
+        dispatch("animEnd");
+        onAnimEnd && onAnimEnd();
+      }
+    },
+    [onAnimEnd]
+  );
   const revealIdx = state.revealed || 0;
+  const letters = props.letters || "";
   return (
     <div>
       <RowDiv className={state.anim} onAnimationEnd={handleRowAnim}>
         {times(props.length, (i) => (
           <Tile
-            key={i}
-            letter={props.letters[i]}
+            key={i.toString() + letters[i]}
+            letter={letters[i]}
             reveal={props.win && i <= revealIdx}
-            evaluation={props.win && i <= revealIdx ? "correct" : undefined}
+            evaluation={
+              props.evaluations && i <= revealIdx
+                ? props.evaluations[i]
+                : undefined
+            }
             onAnimationEnd={handleTileReveal}
           />
         ))}

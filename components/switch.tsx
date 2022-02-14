@@ -39,19 +39,15 @@ const Knob = styled.span<{ checked: boolean }>`
     props.checked ? "transform: translateX(calc(100% - 4px));" : ""}
 `;
 
-export default function Switch(props: Props) {
-  const [checked, setChecked] = useState(!!props.defaultChecked);
+export default function Switch({ defaultChecked, disabled, onChange }: Props) {
+  const [checked, setChecked] = useState(!!defaultChecked);
   const handleClick = useCallback(() => {
-    props.onChange && props.onChange(!checked);
+    onChange && onChange(!checked);
     setChecked((prev) => !prev);
-  }, []);
+  }, [checked, onChange]);
   return (
     <Container>
-      <Control
-        disabled={!!props.disabled}
-        checked={checked}
-        onClick={handleClick}
-      >
+      <Control disabled={!!disabled} checked={checked} onClick={handleClick}>
         <Knob checked={checked} />
       </Control>
     </Container>
