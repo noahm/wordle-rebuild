@@ -11,24 +11,23 @@ from {
 40% {
   transform: scale(1.1);
   opacity: 1;
-}
-`;
+}`;
+
 const FlipIn = keyframes`
 0% {
   transform: rotateX(0);
 }
 100% {
   transform: rotateX(-90deg);
-}
-`;
+}`;
+
 const FlipOut = keyframes`
 0% {
   transform: rotateX(-90deg);
 }
 100% {
   transform: rotateX(0);
-}
-`;
+}`;
 
 interface DivProps {
   animation: "pop" | "flipin" | "flipout" | "idle";

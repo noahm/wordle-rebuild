@@ -1,4 +1,5 @@
 import { useCallback, useReducer } from "react";
+import { usePreviousImmediate } from "rooks";
 import styled, { keyframes } from "styled-components";
 import { Evaluation } from "../lib/logic";
 import { times } from "../lib/utils";
@@ -77,7 +78,7 @@ interface State {
   anim: "reveal" | "bounce" | "shake" | "idle";
 }
 
-type Action = "tileRevealed" | "animEnd";
+type Action = "tileRevealed" | "animEnd" | "evalsArrived";
 
 function reducer(s: State, action: Action): State {
   switch (action) {
@@ -88,7 +89,16 @@ function reducer(s: State, action: Action): State {
       return { anim: "reveal", revealed: (s.revealed || 0) + 1 };
     case "animEnd":
       return { ...s, anim: "idle" };
+    case "evalsArrived":
+      return { anim: "reveal", revealed: 0 };
   }
+}
+
+function animWithProps(anim: State["anim"], props: Props) {
+  if (anim === "bounce" && !props.win) {
+    return "idle";
+  }
+  return anim;
 }
 
 function initialState(p: Props): State {
@@ -98,13 +108,12 @@ function initialState(p: Props): State {
   if (p.win) {
     return { anim: "reveal" };
   }
-  return { anim: "idle" };
+  return { anim: "idle", revealed: 5 };
 }
 
 export default function Row({ onAnimEnd, ...props }: Props) {
   const [state, dispatch] = useReducer(reducer, initialState(props));
   const handleTileReveal = useCallback(() => {
-    console.log("tile anim end");
     dispatch("tileRevealed");
   }, []);
   const handleRowAnim = useCallback(
@@ -118,14 +127,23 @@ export default function Row({ onAnimEnd, ...props }: Props) {
   );
   const revealIdx = state.revealed || 0;
   const letters = props.letters || "";
+
+  const prevEvals = usePreviousImmediate(props.evaluations);
+  if (!prevEvals && props.evaluations && state.anim === "idle") {
+    dispatch("evalsArrived");
+  }
+
   return (
     <div>
-      <RowDiv className={state.anim} onAnimationEnd={handleRowAnim}>
+      <RowDiv
+        className={animWithProps(state.anim, props)}
+        onAnimationEnd={handleRowAnim}
+      >
         {times(props.length, (i) => (
           <Tile
             key={i.toString() + letters[i]}
             letter={letters[i]}
-            reveal={props.win && i <= revealIdx}
+            reveal={props.evaluations && i <= revealIdx}
             evaluation={
               props.evaluations && i <= revealIdx
                 ? props.evaluations[i]

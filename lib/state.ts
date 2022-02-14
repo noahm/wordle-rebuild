@@ -24,6 +24,7 @@ export const evaluations = selector({
     while (i < currentIndex) {
       const evals = evaluateWord(solution, board[i]);
       ret.push(evals || []);
+      i++;
     }
     return ret;
   },

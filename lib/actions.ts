@@ -20,7 +20,7 @@ export function useGameDispatch() {
   return useRecoilTransaction_UNSTABLE(({ get, set }) => (action: Action) => {
     const state = get(boardState).slice();
     const idx = get(rowIndex);
-    const currentInput = state[idx];
+    const currentInput = state[idx] || "";
     switch (action.type) {
       case "add":
         if (currentInput.length < 5) {
