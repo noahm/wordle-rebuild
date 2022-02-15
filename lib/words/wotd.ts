@@ -244,7 +244,7 @@ const wotd = [
   "aroma",
   "caulk",
   "shake",
-  "pupal", // TODO replace
+  "pukes",
   "dodge",
   "swill",
   "tacit",
@@ -273,7 +273,7 @@ const wotd = [
   "tease",
   "cater",
   "movie",
-  "lynch", // TODO replace
+  "lubed",
   "saute",
   "allow",
   "renew",
@@ -294,7 +294,7 @@ const wotd = [
   "fewer",
   "shawl",
   "natal",
-  "fibre", // TODO replace
+  "feint",
   "comma",
   "foray",
   "scare",
@@ -304,7 +304,7 @@ const wotd = [
   "royal",
   "chunk",
   "mince",
-  "slave", // TODO replace
+  "slaps",
   "shame",
   "cheek",
   "ample",
