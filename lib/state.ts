@@ -221,7 +221,11 @@ export const gamesWon = selector({
 export const winPercentage = selector({
   key: "winPercentage",
   get: ({ get }) => {
-    return Math.round((100 * get(gamesWon)) / get(gamesPlayed));
+    const played = get(gamesPlayed);
+    if (!played) {
+      return 0;
+    }
+    return Math.round((100 * get(gamesWon)) / played);
   },
 });
 
@@ -241,5 +245,10 @@ export const averageGuesses = selector({
 
 export const takeoverState = atom<[string, ComponentType] | null>({
   key: "takeover",
+  default: null,
+});
+
+export const modalState = atom<[ComponentType] | null>({
+  key: "modal",
   default: null,
 });

@@ -4,7 +4,7 @@ import styled, { keyframes } from "styled-components";
 import { takeoverState } from "../lib/state";
 import Icon from "./icon";
 
-const SlideIn = keyframes`
+export const SlideIn = keyframes`
   0% {
     transform: translateY(30px);
     opacity: 0;
@@ -14,7 +14,7 @@ const SlideIn = keyframes`
     opacity: 1;
   }`;
 
-const SlideOut = keyframes`
+export const SlideOut = keyframes`
   0% {
     transform: translateY(0px);
     opacity: 1;
@@ -119,7 +119,6 @@ export default function Takeover() {
   const [state, setState] = useRecoilState(takeoverState);
   const [overlayClass, dispatch] = useReducer(reducer, "open");
   const handleAnimationEnd = useCallback(() => {
-    console.log("takeover anim end");
     dispatch("animationEnd");
   }, []);
   const handleClose = useCallback(() => {
