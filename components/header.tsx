@@ -1,5 +1,9 @@
+import { useCallback } from "react";
+import { useSetRecoilState } from "recoil";
 import styled from "styled-components";
+import { takeoverState } from "../lib/state";
 import Icon from "./icon";
+import Settings from "./settings";
 
 const Root = styled.header`
   display: flex;
@@ -35,6 +39,10 @@ const Button = styled.button`
 `;
 
 export default function Header() {
+  const setTakeover = useSetRecoilState(takeoverState);
+  const openSettings = useCallback(() => {
+    setTakeover(["settings", Settings]);
+  }, [setTakeover]);
   return (
     <Root>
       <div>
@@ -47,7 +55,7 @@ export default function Header() {
         <Button>
           <Icon icon="statistics" />
         </Button>{" "}
-        <Button>
+        <Button onClick={openSettings}>
           <Icon icon="settings" />
         </Button>
       </div>

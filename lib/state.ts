@@ -1,3 +1,4 @@
+import { ComponentType } from "react";
 import { atom, atomFamily, selector, selectorFamily } from "recoil";
 import { evaluateWord, Evaluation, solution } from "./logic";
 import { persistAsSubkeyOf, persistStandalone } from "./storage";
@@ -236,4 +237,9 @@ export const averageGuesses = selector({
     }, 0);
     return Math.round(totalGuesses / get(gamesWon));
   },
+});
+
+export const takeoverState = atom<[string, ComponentType] | null>({
+  key: "takeover",
+  default: null,
 });

@@ -34,9 +34,10 @@ function getPuzzleIndexForDate(d: Date) {
   return getDayDifference(firstDay, d);
 }
 
-export function getSolutionForDate(d: Date) {
-  const idx = getPuzzleIndexForDate(d) % wotd.length;
+function getSolutionForPuzzleNumber(num: number) {
+  const idx = num % wotd.length;
   return wotd[idx];
 }
 
-export const solution = getSolutionForDate(new Date());
+export const puzzleIndex = getPuzzleIndexForDate(new Date());
+export const solution = getSolutionForPuzzleNumber(puzzleIndex);
