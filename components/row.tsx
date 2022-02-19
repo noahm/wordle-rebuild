@@ -3,7 +3,6 @@ import { useRecoilValue } from "recoil";
 import { usePreviousImmediate } from "rooks";
 import styled, { keyframes } from "styled-components";
 import { useClearFeedback } from "../lib/actions";
-import { solution } from "../lib/logic";
 import { evaluation, rowFeedback, wordInRow } from "../lib/state";
 import { times } from "../lib/utils";
 import Tile from "./tile";
@@ -57,11 +56,11 @@ const RowDiv = styled.div`
   grid-template-columns: repeat(5, 1fr);
   grid-gap: 5px;
 
-  &.shake {
+  &.invalid {
     animation-name: ${Shake};
     animation-duration: 600ms;
   }
-  &.bounce {
+  &.win {
     animation-name: ${Bounce};
     animation-duration: 1000ms;
   }
@@ -73,17 +72,17 @@ interface Props {
 
 interface State {
   revealed?: number;
-  anim: "reveal" | "bounce" | "shake" | "idle";
+  anim: "reveal" | "idle";
 }
 
-type Action = "tileRevealed" | "animEnd" | "evalsArrived" | "win";
+type Action = "tileRevealed" | "animEnd" | "evalsArrived";
 
 function reducer(s: State, action: Action): State {
-  console.log(action);
   switch (action) {
-    case "win":
-      return { anim: "bounce" };
     case "tileRevealed":
+      if (s.revealed === 4) {
+        return { anim: "idle", revealed: 5 };
+      }
       return { anim: "reveal", revealed: (s.revealed || 0) + 1 };
     case "animEnd":
       return { ...s, anim: "idle" };
@@ -92,22 +91,11 @@ function reducer(s: State, action: Action): State {
   }
 }
 
-function mergeAnim(anim: State["anim"], feedback: "shake" | "idle") {
+function mergeAnim(anim: State["anim"], feedback: "invalid" | "win" | "idle") {
   if (anim === "idle") {
     return feedback;
   }
   return anim;
-}
-
-function initialState(p: Props): State {
-  console.log("initial state for props", p);
-  // if (p.invalid) {
-  //   return { anim: "shake" };
-  // }
-  // if (p.evaluations?.length) {
-  //   return { anim: "reveal" };
-  // }
-  return { anim: "idle", revealed: 5 };
 }
 
 export default function Row(props: Props) {
@@ -116,7 +104,7 @@ export default function Row(props: Props) {
   const letters = useRecoilValue(wordInRow(props.idx));
   const evals = useRecoilValue(evaluation(props.idx));
   // const isLiveRow = useRecoilValue(isCurrentRow(props.idx));
-  const [state, dispatch] = useReducer(reducer, initialState(props));
+  const [state, dispatch] = useReducer(reducer, { anim: "idle", revealed: 5 });
   const handleTileReveal = useCallback(() => {
     dispatch("tileRevealed");
   }, []);
@@ -125,6 +113,7 @@ export default function Row(props: Props) {
       if (e.currentTarget === e.target) {
         dispatch("animEnd");
         if (feedback !== "idle") {
+          console.log("clearing", { feedback });
           clearFeedback();
         }
       }
@@ -136,9 +125,6 @@ export default function Row(props: Props) {
   const prevEvals = usePreviousImmediate(evals);
   if (!prevEvals && evals && state.anim === "idle") {
     dispatch("evalsArrived");
-  }
-  if (state.anim === "reveal" && state.revealed === 5 && letters === solution) {
-    dispatch("win");
   }
 
   return (
