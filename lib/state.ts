@@ -1,30 +1,116 @@
-import { atom, selector } from "recoil";
+import { atom, atomFamily, selector, selectorFamily } from "recoil";
 import { evaluateWord, Evaluation, solution } from "./logic";
 import { persistAsSubkeyOf, persistStandalone } from "./storage";
+import { times } from "./utils";
 
-export const boardState = atom<string[]>({
+export const guessedWord = atomFamily<string, number>({
   key: "boardState",
-  default: [],
-  effects: [persistAsSubkeyOf("gameState")],
+  default: "",
+  effects: [persistStandalone],
+});
+
+export const wordInRow = selectorFamily<string, number>({
+  key: "wordInRow",
+  get:
+    (idx) =>
+    ({ get }) => {
+      const currentRow = get(rowIndex);
+      if (currentRow === idx) {
+        return get(wordInProgress);
+      }
+      return get(guessedWord(idx));
+    },
+});
+
+export const guessedWords = selector({
+  key: "",
+  get: ({ get }) => times(6, (idx) => get(guessedWord(idx))),
+});
+
+export const wordInProgress = atom<string>({
+  key: "wordInProgress",
+  default: "",
+});
+
+export const boardState = selector({
+  key: "fullState",
+  get: ({ get }) => {
+    const board = get(guessedWords).slice();
+    const curr = get(wordInProgress);
+    const idx = get(rowIndex);
+    board[idx] = curr;
+    return board;
+  },
 });
 
 export const rowIndex = atom<number>({
   key: "rowIndex",
   default: 0,
-  effects: [persistAsSubkeyOf("gameState")],
+  effects: [persistStandalone],
+});
+
+export const isCurrentRow = selectorFamily({
+  key: "isCurrentRow",
+  get:
+    (idx: number) =>
+    ({ get }) =>
+      idx === get(rowIndex),
+});
+
+export const evaluation = selectorFamily({
+  key: "evaluation",
+  get:
+    (idx: number) =>
+    ({ get }) => {
+      const word = get(guessedWord(idx));
+      return evaluateWord(solution, word);
+    },
+});
+
+export const liveRowFeedback = atom<"shake" | "idle">({
+  key: "liveRowFeedback",
+  default: "idle",
+});
+
+export const rowFeedback = selectorFamily({
+  key: "rowFeedback",
+  get:
+    (idx: number) =>
+    ({ get }) => {
+      const liveRow = get(rowIndex);
+      if (idx === liveRow) {
+        return get(liveRowFeedback);
+      }
+      return "idle";
+    },
 });
 
 export const evaluations = selector({
   key: "evaluations",
+  get: ({ get }) => times(6, (idx) => get(evaluation(idx))),
+});
+
+export const keyEvaluations = selector({
+  key: "keyEvaluations",
   get: ({ get }) => {
-    const board = get(boardState);
+    const board = get(guessedWords);
     const currentIndex = get(rowIndex);
-    let ret: Evaluation[][] = [];
-    let i = 0;
-    while (i < currentIndex) {
-      const evals = evaluateWord(solution, board[i]);
-      ret.push(evals || []);
-      i++;
+    const evals = get(evaluations);
+    const ret = new Map<string, Evaluation>();
+    for (let wordIndex = 0; wordIndex < currentIndex; wordIndex++) {
+      const word = board[wordIndex];
+      const wordEval = evals[wordIndex];
+      for (let letterIndex = 0; letterIndex < 5; letterIndex++) {
+        if (!wordEval) {
+          continue;
+        }
+        const letter = word[letterIndex];
+        const letterEval = wordEval[letterIndex];
+        const previousEval = ret.get(letter);
+        if (previousEval !== "correct") {
+          ret.set(letter, letterEval);
+        }
+      }
     }
     return ret;
   },
@@ -33,37 +119,45 @@ export const evaluations = selector({
 export const firstPlayedTs = atom<number>({
   key: "firstPlayedTs",
   default: 0,
-  effects: [persistAsSubkeyOf("gameState")],
+  effects: [persistStandalone],
 });
 export const lastPlayedTs = atom<number>({
   key: "lastPlayedTs",
   default: 0,
-  effects: [persistAsSubkeyOf("gameState")],
+  effects: [persistStandalone],
 });
 export const lastCompletedTs = atom<number>({
   key: "lastCompletedTs",
   default: 0,
-  effects: [persistAsSubkeyOf("gameState")],
+  effects: [persistStandalone],
 });
 
 type GAME_STATUS = "IN_PROGRESS" | "WIN" | "FAIL";
-export const gameStatus = atom<GAME_STATUS>({
+export const gameStatus = selector<GAME_STATUS>({
   key: "gameStatus",
-  default: "IN_PROGRESS",
-  effects: [persistAsSubkeyOf("gameState")],
+  get: ({ get }) => {
+    const guesses = get(guessedWords);
+    if (guesses[guesses.length - 1] === solution) {
+      return "WIN";
+    }
+    if (guesses.length === 6) {
+      return "FAIL";
+    }
+    return "IN_PROGRESS";
+  },
 });
 
 export const hardMode = atom<boolean>({
   key: "hardMode",
   default: false,
-  effects: [persistAsSubkeyOf("gameState")],
+  effects: [persistStandalone],
 });
 
-// export const darkTheme = atom<boolean>({
-//   key: "darkTheme",
-//   default: window.matchMedia("(prefers-color-scheme: dark)").matches,
-//   effects: [persistStandalone],
-// });
+export const darkTheme = atom<boolean | undefined>({
+  key: "darkTheme",
+  default: undefined,
+  effects: [persistStandalone],
+});
 
 export const firstWords = atom<string[]>({
   key: "first-words",

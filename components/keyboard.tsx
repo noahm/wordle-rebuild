@@ -1,7 +1,9 @@
 import { useCallback, MouseEvent } from "react";
+import { useRecoilValue } from "recoil";
 import { useFreshTick, useWindowEventListener } from "rooks";
 import styled from "styled-components";
 import { useGameDispatch } from "../lib/actions";
+import { keyEvaluations } from "../lib/state";
 import Icon from "./icon";
 
 const Root = styled.div`
@@ -109,6 +111,7 @@ function classForKey(key: string) {
 }
 
 export default function Keyboard() {
+  const keyEvals = useRecoilValue(keyEvaluations);
   const dispatch = useGameDispatch();
   const respondToKey = useFreshTick((key: string) => {
     if (key === "↵" || key === "enter") {
@@ -119,10 +122,11 @@ export default function Keyboard() {
       dispatch({ type: "add", letter: key });
     }
   });
-  const handleKeyPress = useCallback(
+  const handleVirtKeyPress = useCallback(
     (e: MouseEvent<Element>) => {
       const keyButton = (e.target as Element).closest("button");
       if (keyButton) {
+        keyButton.blur();
         respondToKey(keyButton.dataset.key);
       }
     },
@@ -137,14 +141,19 @@ export default function Keyboard() {
 
   return (
     <Root>
-      <Container onClick={handleKeyPress}>
+      <Container onClick={handleVirtKeyPress}>
         {layout.map((row, idx) => (
           <Row key={idx}>
             {row.map((key, jdx) =>
               key === "-" ? (
                 <Spacer key={jdx} />
               ) : (
-                <Button key={key} data-key={key} className={classForKey(key)}>
+                <Button
+                  key={key}
+                  data-key={key}
+                  data-state={keyEvals.get(key)}
+                  className={classForKey(key)}
+                >
                   {labelForKey(key)}
                 </Button>
               )

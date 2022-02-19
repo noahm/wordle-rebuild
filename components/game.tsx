@@ -1,7 +1,6 @@
-import { useRecoilValue } from "recoil";
 import styled from "styled-components";
 import Row from "../components/row";
-import { boardState, evaluations } from "../lib/state";
+import { useGameBoot } from "../lib/actions";
 import { times } from "../lib/utils";
 import Header from "./header";
 import Keyboard from "./keyboard";
@@ -57,27 +56,15 @@ const Board = styled.div`
 `;
 
 export default function Game() {
-  const rows = useRecoilValue(boardState);
-  const evals = useRecoilValue(evaluations);
+  useGameBoot();
   return (
     <Root>
       <Header />
       <BoardContainer>
         <Board style={{ width: "350px", height: "420px" }}>
           {times(6, (idx) => (
-            <Row
-              key={idx}
-              length={5}
-              letters={rows[idx]}
-              evaluations={evals[idx]}
-            />
+            <Row key={idx} idx={idx} />
           ))}
-          {/* <Row letters="" length={5} />
-          <Row letters="julie" length={5} />
-          <Row letters="  i" length={5} />
-          <Row letters="heart" length={5} />
-          <Row letters=" you" length={5} win />
-          <Row letters="" length={5} /> */}
         </Board>
       </BoardContainer>
       <Keyboard />

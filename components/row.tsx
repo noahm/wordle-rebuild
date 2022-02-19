@@ -1,7 +1,10 @@
 import { useCallback, useReducer } from "react";
+import { useRecoilValue } from "recoil";
 import { usePreviousImmediate } from "rooks";
 import styled, { keyframes } from "styled-components";
-import { Evaluation } from "../lib/logic";
+import { useClearFeedback } from "../lib/actions";
+import { solution } from "../lib/logic";
+import { evaluation, rowFeedback, wordInRow } from "../lib/state";
 import { times } from "../lib/utils";
 import Tile from "./tile";
 
@@ -65,12 +68,7 @@ const RowDiv = styled.div`
 `;
 
 interface Props {
-  letters?: string;
-  length: number;
-  evaluations?: Evaluation[];
-  win?: boolean;
-  invalid?: boolean;
-  onAnimEnd?: () => void;
+  idx: number;
 }
 
 interface State {
@@ -78,14 +76,14 @@ interface State {
   anim: "reveal" | "bounce" | "shake" | "idle";
 }
 
-type Action = "tileRevealed" | "animEnd" | "evalsArrived";
+type Action = "tileRevealed" | "animEnd" | "evalsArrived" | "win";
 
 function reducer(s: State, action: Action): State {
+  console.log(action);
   switch (action) {
+    case "win":
+      return { anim: "bounce" };
     case "tileRevealed":
-      if (s.revealed === 4) {
-        return { anim: "bounce", revealed: 5 };
-      }
       return { anim: "reveal", revealed: (s.revealed || 0) + 1 };
     case "animEnd":
       return { ...s, anim: "idle" };
@@ -94,24 +92,30 @@ function reducer(s: State, action: Action): State {
   }
 }
 
-function animWithProps(anim: State["anim"], props: Props) {
-  if (anim === "bounce" && !props.win) {
-    return "idle";
+function mergeAnim(anim: State["anim"], feedback: "shake" | "idle") {
+  if (anim === "idle") {
+    return feedback;
   }
   return anim;
 }
 
 function initialState(p: Props): State {
-  if (p.invalid) {
-    return { anim: "shake" };
-  }
-  if (p.win) {
-    return { anim: "reveal" };
-  }
+  console.log("initial state for props", p);
+  // if (p.invalid) {
+  //   return { anim: "shake" };
+  // }
+  // if (p.evaluations?.length) {
+  //   return { anim: "reveal" };
+  // }
   return { anim: "idle", revealed: 5 };
 }
 
-export default function Row({ onAnimEnd, ...props }: Props) {
+export default function Row(props: Props) {
+  const feedback = useRecoilValue(rowFeedback(props.idx));
+  const clearFeedback = useClearFeedback();
+  const letters = useRecoilValue(wordInRow(props.idx));
+  const evals = useRecoilValue(evaluation(props.idx));
+  // const isLiveRow = useRecoilValue(isCurrentRow(props.idx));
   const [state, dispatch] = useReducer(reducer, initialState(props));
   const handleTileReveal = useCallback(() => {
     dispatch("tileRevealed");
@@ -120,35 +124,35 @@ export default function Row({ onAnimEnd, ...props }: Props) {
     (e) => {
       if (e.currentTarget === e.target) {
         dispatch("animEnd");
-        onAnimEnd && onAnimEnd();
+        if (feedback !== "idle") {
+          clearFeedback();
+        }
       }
     },
-    [onAnimEnd]
+    [clearFeedback, feedback]
   );
   const revealIdx = state.revealed || 0;
-  const letters = props.letters || "";
 
-  const prevEvals = usePreviousImmediate(props.evaluations);
-  if (!prevEvals && props.evaluations && state.anim === "idle") {
+  const prevEvals = usePreviousImmediate(evals);
+  if (!prevEvals && evals && state.anim === "idle") {
     dispatch("evalsArrived");
+  }
+  if (state.anim === "reveal" && state.revealed === 5 && letters === solution) {
+    dispatch("win");
   }
 
   return (
     <div>
       <RowDiv
-        className={animWithProps(state.anim, props)}
+        className={mergeAnim(state.anim, feedback)}
         onAnimationEnd={handleRowAnim}
       >
-        {times(props.length, (i) => (
+        {times(5, (i) => (
           <Tile
             key={i.toString() + letters[i]}
             letter={letters[i]}
-            reveal={props.evaluations && i <= revealIdx}
-            evaluation={
-              props.evaluations && i <= revealIdx
-                ? props.evaluations[i]
-                : undefined
-            }
+            reveal={evals && i <= revealIdx}
+            evaluation={evals && i <= revealIdx ? evals[i] : undefined}
             onAnimationEnd={handleTileReveal}
           />
         ))}

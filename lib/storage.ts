@@ -39,14 +39,34 @@ export function updateStorageFields(key: string, updateFields: StorageValue) {
 
 export function persistAsSubkeyOf<T>(macroKey: string) {
   const effect: AtomEffect<T> = ({ node, setSelf, onSet, getPromise }) => {
-    getPromise(ssrCompletedState).then(() => {
+    const [key, subkey] = node.key.split("__");
+    function setInitial() {
       const storedValue = getStorageKey(macroKey);
       if (storedValue) {
-        setSelf(storedValue[node.key]);
+        if (subkey) {
+          setSelf(storedValue[key][subkey]);
+        } else {
+          setSelf(storedValue[key]);
+        }
       }
-      onSet((newValue) => {
-        updateStorageFields(macroKey, { [node.key]: newValue });
-      });
+    }
+
+    function setNewValue(newValue: T) {
+      let nextValue = getStorageKey(macroKey);
+      if (subkey) {
+        if (!nextValue) {
+          nextValue = {};
+        }
+        nextValue[subkey] = newValue;
+      } else {
+        nextValue = newValue;
+      }
+      updateStorageFields(macroKey, { [key]: newValue });
+    }
+
+    getPromise(ssrCompletedState).then(() => {
+      setInitial();
+      onSet(setNewValue);
     });
   };
 
