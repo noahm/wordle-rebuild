@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { useSetRecoilState } from "recoil";
 import styled from "styled-components";
 import { modalState, takeoverState } from "../lib/state";
+import Help from "./help";
 import Icon from "./icon";
 import Settings from "./settings";
 import Stats from "./stats";
@@ -42,6 +43,9 @@ const Button = styled.button`
 export default function Header() {
   const setTakeover = useSetRecoilState(takeoverState);
   const setModal = useSetRecoilState(modalState);
+  const openHelp = useCallback(() => {
+    setTakeover(["how to play", Help]);
+  }, [setTakeover]);
   const openSettings = useCallback(() => {
     setTakeover(["settings", Settings]);
   }, [setTakeover]);
@@ -51,7 +55,7 @@ export default function Header() {
   return (
     <Root>
       <div>
-        <Button>
+        <Button onClick={openHelp}>
           <Icon icon="help" />
         </Button>
       </div>

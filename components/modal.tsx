@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer } from "react";
+import { MouseEvent, useCallback, useEffect, useReducer } from "react";
 import { useRecoilState } from "recoil";
 import styled from "styled-components";
 import { modalState } from "../lib/state";
@@ -87,6 +87,11 @@ export default function Modal() {
   const handleClose = useCallback(() => {
     dispatch("close");
   }, []);
+  const handleOverlayClick = useCallback((e: MouseEvent<HTMLElement>) => {
+    if (e.target === e.currentTarget) {
+      dispatch("close");
+    }
+  }, []);
   useEffect(() => {
     if (animClass === "closed") {
       setState(null);
@@ -98,7 +103,7 @@ export default function Modal() {
   }
   const [Contents] = state;
   return (
-    <Overlay className={animClass}>
+    <Overlay className={animClass} onClick={handleOverlayClick}>
       <Content onAnimationEnd={handleAnimationEnd} className={animClass}>
         <Button onClick={handleClose}>
           <Icon icon="close" />

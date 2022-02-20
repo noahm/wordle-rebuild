@@ -187,7 +187,7 @@ export default function Stats() {
         <Stat source={currentStreak} label="Current Streak" />
         <Stat source={maxStreak} label="Max Streak" />
       </Statistics>
-
+      <H1>Guess Distribution</H1>
       <Distributions>
         <NoData>No Data</NoData>
       </Distributions>
