@@ -77,15 +77,12 @@ export const persistStandalone: AtomEffect<any> = ({
   node,
   setSelf,
   onSet,
-  getPromise,
 }) => {
-  getPromise(ssrCompletedState).then(() => {
-    const storedValue = getStorageKey(node.key);
-    if (storedValue) {
-      setSelf(storedValue);
-    }
-    onSet((newValue) => {
-      setStorageKey(node.key, newValue);
-    });
+  const storedValue = getStorageKey(node.key);
+  if (storedValue) {
+    setSelf(storedValue);
+  }
+  onSet((newValue) => {
+    setStorageKey(node.key, newValue);
   });
 };

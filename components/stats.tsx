@@ -1,9 +1,11 @@
-import { RecoilValue, useRecoilValue } from "recoil";
+import { useCallback } from "react";
+import { RecoilValue, useRecoilValue, useSetRecoilState } from "recoil";
 import styled from "styled-components";
 import {
   currentStreak,
   gamesPlayed,
   maxStreak,
+  modalState,
   winPercentage,
 } from "../lib/state";
 
@@ -177,7 +179,14 @@ function Stat({
   );
 }
 
-export default function Stats() {
+export default function useShowStats() {
+  const setModal = useSetRecoilState(modalState);
+  return useCallback(() => {
+    setModal([Stats]);
+  }, [setModal]);
+}
+
+function Stats() {
   return (
     <Container>
       <H1>Statistics</H1>

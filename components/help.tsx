@@ -1,4 +1,7 @@
+import { useCallback } from "react";
+import { useSetRecoilState } from "recoil";
 import styled from "styled-components";
+import { modalState } from "../lib/state";
 import Tile from "./tile";
 
 const Section = styled.section`
@@ -27,7 +30,14 @@ const Row = styled.div`
   }
 `;
 
-export default function Help() {
+export default function useShowHelp() {
+  const setModal = useSetRecoilState(modalState);
+  return useCallback(() => {
+    setModal([Help]);
+  }, [setModal]);
+}
+
+function Help() {
   return (
     <Section>
       <Instructions>

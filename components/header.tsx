@@ -1,11 +1,8 @@
-import { useCallback } from "react";
-import { useSetRecoilState } from "recoil";
 import styled from "styled-components";
-import { modalState, takeoverState } from "../lib/state";
-import Help from "./help";
+import useShowHelp from "./help";
 import Icon from "./icon";
-import Settings from "./settings";
-import Stats from "./stats";
+import useShowSettings from "./settings";
+import useShowStats from "./stats";
 
 const Root = styled.header`
   display: flex;
@@ -41,30 +38,19 @@ const Button = styled.button`
 `;
 
 export default function Header() {
-  const setTakeover = useSetRecoilState(takeoverState);
-  const setModal = useSetRecoilState(modalState);
-  const openHelp = useCallback(() => {
-    setTakeover(["how to play", Help]);
-  }, [setTakeover]);
-  const openSettings = useCallback(() => {
-    setTakeover(["settings", Settings]);
-  }, [setTakeover]);
-  const openStats = useCallback(() => {
-    setModal([Stats]);
-  }, [setModal]);
   return (
     <Root>
       <div>
-        <Button onClick={openHelp}>
+        <Button onClick={useShowHelp()}>
           <Icon icon="help" />
         </Button>
       </div>
       <Title> WORDLE* </Title>
       <div>
-        <Button onClick={openStats}>
+        <Button onClick={useShowStats()}>
           <Icon icon="statistics" />
         </Button>{" "}
-        <Button onClick={openSettings}>
+        <Button onClick={useShowSettings()}>
           <Icon icon="settings" />
         </Button>
       </div>

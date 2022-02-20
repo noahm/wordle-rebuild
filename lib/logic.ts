@@ -26,12 +26,12 @@ function zeroHrs(d: Date) {
   return new Date(d).setHours(0, 0, 0, 0);
 }
 
-function getDayDifference(a: Date, b: Date) {
-  return Math.round(zeroHrs(a) - zeroHrs(b) / 864e5);
+export function getDayDifference(a: Date, b: Date) {
+  return Math.round((zeroHrs(b) - zeroHrs(a)) / 864e5);
 }
 
 function getPuzzleIndexForDate(d: Date) {
-  return getDayDifference(firstDay, d);
+  return getDayDifference(firstDay, d) - 5;
 }
 
 function getSolutionForPuzzleNumber(num: number) {

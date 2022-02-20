@@ -1,15 +1,14 @@
 import { useCallback, useEffect } from "react";
 import { useRecoilTransaction_UNSTABLE, useSetRecoilState } from "recoil";
-import { solution } from "./logic";
+import useShowHelp from "../components/help";
+import { applyLegacyState } from "./legacyState";
+import { getDayDifference, solution } from "./logic";
 import {
   guessedWord,
   wordInProgress,
-  hardMode,
-  lastPlayedTs,
-  lastCompletedTs,
   liveRowFeedback,
+  lastPlayedTs,
 } from "./state";
-import { getStorageKey, setStorageKey } from "./storage";
 import { times } from "./utils";
 import { dictionary } from "./words";
 
@@ -33,69 +32,71 @@ interface DelLetter {
 type Action = Boot | Guess | AddLetter | DelLetter;
 
 export function useGameDispatch() {
-  return useRecoilTransaction_UNSTABLE(
-    ({ get, set, reset }) =>
-      (action: Action) => {
-        const currentInput = get(wordInProgress);
-        switch (action.type) {
-          case "boot":
-            const oldState = getStorageKey("gameState");
-            if (oldState) {
-              if (oldState.solution === solution) {
-                if (oldState.boardState) {
-                  (oldState.boardState as string[]).forEach((word, idx) => {
-                    set(guessedWord(idx), word);
-                  });
-                }
-              } else {
-                times(6, (idx) => reset(guessedWord(idx)));
-              }
-              set(hardMode, !!oldState.hardMode);
-              set(lastPlayedTs, oldState.lastPlayedTs);
-              set(lastCompletedTs, oldState.lastCompletedTs);
-              setStorageKey("gameState", undefined);
+  const showHelp = useShowHelp();
+  return useRecoilTransaction_UNSTABLE(({ get, set, reset }) => {
+    function resetOldGuesses() {
+      times(6, (idx) => reset(guessedWord(idx)));
+    }
+    return (action: Action) => {
+      const currentInput = get(wordInProgress);
+      switch (action.type) {
+        case "boot":
+          if (applyLegacyState(set, resetOldGuesses)) {
+            return;
+          }
+          const lastPlayed = get(lastPlayedTs);
+
+          if (lastPlayed) {
+            if (getDayDifference(new Date(lastPlayed), new Date()) >= 1) {
+              // current state is from previous day, must reset
+              resetOldGuesses();
             }
-            break;
-          case "add":
-            if (currentInput.length < 5) {
-              set(wordInProgress, currentInput + action.letter);
+          } else {
+            setTimeout(showHelp, 100);
+            resetOldGuesses();
+          }
+          break;
+        case "add":
+          if (currentInput.length < 5) {
+            set(wordInProgress, currentInput + action.letter);
+          }
+          break;
+        case "del":
+          if (currentInput.length) {
+            set(wordInProgress, currentInput.slice(0, -1));
+          } else {
+            reset(guessedWord(5));
+          }
+          break;
+        case "guess":
+          let idx = 0;
+          while (idx < 7) {
+            if (!get(guessedWord(idx))) {
+              break;
             }
-            break;
-          case "del":
-            if (currentInput.length) {
-              set(wordInProgress, currentInput.slice(0, -1));
-            } else {
-              reset(guessedWord(5));
+            idx++;
+          }
+          if (idx < 6) {
+            if (currentInput.length !== 5) {
+              set(liveRowFeedback, "invalid");
+              return;
             }
-            break;
-          case "guess":
-            let idx = 0;
-            while (idx < 7) {
-              if (!get(guessedWord(idx))) {
-                break;
-              }
-              idx++;
+            if (!dictionary.has(currentInput)) {
+              set(liveRowFeedback, "invalid");
+              return;
             }
-            if (idx < 6) {
-              if (currentInput.length !== 5) {
-                set(liveRowFeedback, "invalid");
-                return;
-              }
-              if (!dictionary.has(currentInput)) {
-                set(liveRowFeedback, "invalid");
-                return;
-              }
-              set(guessedWord(idx), currentInput);
-              set(wordInProgress, "");
-              if (currentInput === solution) {
-                console.log(" setting live row feedback ");
-                set(liveRowFeedback, "win");
-              }
+            set(guessedWord(idx), currentInput);
+            set(wordInProgress, "");
+            set(lastPlayedTs, Date.now());
+            if (currentInput === solution) {
+              console.log(" setting live row feedback ");
+              set(liveRowFeedback, "win");
             }
-            break;
-        }
+          }
+          break;
       }
-  );
+    };
+  }, []);
 }
 
 export function useClearFeedback() {

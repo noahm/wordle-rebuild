@@ -1,5 +1,8 @@
+import { useCallback } from "react";
+import { useSetRecoilState } from "recoil";
 import styled from "styled-components";
 import { puzzleIndex } from "../lib/logic";
+import { takeoverState } from "../lib/state";
 import Switch from "./switch";
 
 const Setting = styled.div`
@@ -35,7 +38,14 @@ const Footnote = styled.div`
   align-items: flex-end;
 `;
 
-export default function Settings() {
+export default function useShowSettings() {
+  const setTakeover = useSetRecoilState(takeoverState);
+  return useCallback(() => {
+    setTakeover(["settings", Settings]);
+  }, [setTakeover]);
+}
+
+function Settings() {
   return (
     <>
       <div>
