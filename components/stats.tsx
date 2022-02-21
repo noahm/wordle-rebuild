@@ -5,9 +5,9 @@ import {
   currentStreak,
   gamesPlayed,
   maxStreak,
-  modalState,
   winPercentage,
 } from "../lib/state";
+import { modalState } from "./modal";
 
 const Container = styled.div`
   display: flex;

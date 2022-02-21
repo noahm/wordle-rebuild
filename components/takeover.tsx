@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useReducer } from "react";
-import { useRecoilState } from "recoil";
+import { ComponentType, useCallback, useEffect, useReducer } from "react";
+import { atom, useRecoilState } from "recoil";
 import styled, { keyframes } from "styled-components";
-import { takeoverState } from "../lib/state";
 import Icon from "./icon";
 
 export const SlideIn = keyframes`
@@ -114,6 +113,11 @@ function reducer(s: State, a: Action): State {
   }
   return s;
 }
+
+export const takeoverState = atom<[string, ComponentType] | null>({
+  key: "takeover",
+  default: null,
+});
 
 export default function Takeover() {
   const [state, setState] = useRecoilState(takeoverState);

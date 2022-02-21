@@ -7,27 +7,6 @@ import { evaluation, rowFeedback, wordInRow } from "../lib/state";
 import { times } from "../lib/utils";
 import Tile from "./tile";
 
-const Bounce = keyframes`
-  0%, 20% {
-    transform: translateY(0);
-  }
-  40% {
-    transform: translateY(-30px);
-  }
-  50% {
-    transform: translateY(5px);
-  }
-  60% {
-    transform: translateY(-15px);
-  }
-  80% {
-    transform: translateY(2px);
-  }
-  100% {
-    transform: translateY(0);
-  }
-`;
-
 const Shake = keyframes`
   10%,
   90% {
@@ -56,13 +35,13 @@ const RowDiv = styled.div`
   grid-template-columns: repeat(5, 1fr);
   grid-gap: 5px;
 
+  &.live {
+    border-left: 2px solid red;
+  }
+
   &.invalid {
     animation-name: ${Shake};
     animation-duration: 600ms;
-  }
-  &.win {
-    animation-name: ${Bounce};
-    animation-duration: 1000ms;
   }
 `;
 
@@ -127,19 +106,18 @@ export default function Row(props: Props) {
     dispatch("evalsArrived");
   }
 
+  const displayAnim = mergeAnim(state.anim, feedback);
   return (
     <div>
-      <RowDiv
-        className={mergeAnim(state.anim, feedback)}
-        onAnimationEnd={handleRowAnim}
-      >
+      <RowDiv className={displayAnim} onAnimationEnd={handleRowAnim}>
         {times(5, (i) => (
           <Tile
-            key={i.toString() + letters[i]}
+            key={i.toString() + (letters[i] || "")}
             letter={letters[i]}
             reveal={evals && i <= revealIdx}
             evaluation={evals && i <= revealIdx ? evals[i] : undefined}
             onAnimationEnd={handleTileReveal}
+            bounceWithDelay={displayAnim === "win" ? i * 100 : undefined}
           />
         ))}
       </RowDiv>

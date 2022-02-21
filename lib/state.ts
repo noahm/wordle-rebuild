@@ -1,4 +1,3 @@
-import { ComponentType } from "react";
 import { atom, atomFamily, selector, selectorFamily } from "recoil";
 import { evaluateWord, Evaluation, solution } from "./logic";
 import { persistAsSubkeyOf, persistStandalone } from "./storage";
@@ -24,7 +23,7 @@ export const gameStatus = selector<GAME_STATUS>({
   key: "gameStatus",
   get: ({ get }) => {
     const guesses = get(guessedWords);
-    if (guesses[guesses.length - 1] === solution) {
+    if (guesses.some((word) => word === solution)) {
       return "WIN";
     }
     if (guesses[5]) {
@@ -58,6 +57,7 @@ export const rowIndex = selector<number>({
   get: ({ get }) => {
     let idx = get(guessedWords).indexOf("");
     const status = get(gameStatus);
+    console.log(status);
     if (idx === -1) {
       idx = 6;
     }
@@ -241,14 +241,4 @@ export const averageGuesses = selector({
     }, 0);
     return Math.round(totalGuesses / get(gamesWon));
   },
-});
-
-export const takeoverState = atom<[string, ComponentType] | null>({
-  key: "takeover",
-  default: null,
-});
-
-export const modalState = atom<[ComponentType] | null>({
-  key: "modal",
-  default: null,
 });

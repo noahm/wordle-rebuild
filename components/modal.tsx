@@ -1,7 +1,12 @@
-import { MouseEvent, useCallback, useEffect, useReducer } from "react";
-import { useRecoilState } from "recoil";
+import {
+  ComponentType,
+  MouseEvent,
+  useCallback,
+  useEffect,
+  useReducer,
+} from "react";
+import { atom, useRecoilState } from "recoil";
 import styled from "styled-components";
-import { modalState } from "../lib/state";
 import Icon from "./icon";
 import { SlideIn, SlideOut } from "./takeover";
 
@@ -77,6 +82,11 @@ function reducer(s: State, a: Action): State {
   }
   return s;
 }
+
+export const modalState = atom<[ComponentType] | null>({
+  key: "modal",
+  default: null,
+});
 
 export default function Modal() {
   const [state, setState] = useRecoilState(modalState);

@@ -5,31 +5,6 @@ import { times } from "../lib/utils";
 import Header from "./header";
 import Keyboard from "./keyboard";
 
-`
-.toaster {
-  position: absolute;
-  top: 10%;
-  left: 50%;
-  transform: translate(-50%, 0);
-  pointer-events: none;
-  width: fit-content;
-}
-#game-toaster {
-  z-index: 1000;
-}
-#system-toaster {
-  z-index: 4000;
-}
-
-button.icon {
-}
-
-#debug-tools {
-  position: absolute;
-  bottom: 0;
-}
-`;
-
 const Root = styled.div`
   width: 100%;
   max-width: var(--game-max-width);

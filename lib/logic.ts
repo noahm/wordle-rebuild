@@ -31,7 +31,7 @@ export function getDayDifference(a: Date, b: Date) {
 }
 
 function getPuzzleIndexForDate(d: Date) {
-  return getDayDifference(firstDay, d) - 5;
+  return getDayDifference(firstDay, d);
 }
 
 function getSolutionForPuzzleNumber(num: number) {
@@ -41,3 +41,16 @@ function getSolutionForPuzzleNumber(num: number) {
 
 export const puzzleIndex = getPuzzleIndexForDate(new Date());
 export const solution = getSolutionForPuzzleNumber(puzzleIndex);
+
+const feedback = [
+  "Lucker Dog",
+  "Magnificent",
+  "Impressive",
+  "Splendid",
+  "Great",
+  "Phew",
+];
+
+export function feedbackForWin(rowIndex: number) {
+  return feedback[rowIndex];
+}

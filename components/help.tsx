@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useSetRecoilState } from "recoil";
 import styled from "styled-components";
-import { modalState } from "../lib/state";
+import { modalState } from "./modal";
 import Tile from "./tile";
 
 const Section = styled.section`

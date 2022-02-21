@@ -4,6 +4,7 @@ import { RecoilRoot } from "recoil";
 import Game from "../components/game";
 import Modal from "../components/modal";
 import Takeover from "../components/takeover";
+import ToastRoot from "../components/toast";
 
 export default function Home() {
   const [renderGame, setRenderGame] = useState(false);
@@ -18,6 +19,7 @@ export default function Home() {
       {renderGame && <Game />}
       <Takeover />
       <Modal />
+      <ToastRoot />
     </RecoilRoot>
   );
 }

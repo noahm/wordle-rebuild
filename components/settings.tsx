@@ -2,8 +2,8 @@ import { useCallback } from "react";
 import { useSetRecoilState } from "recoil";
 import styled from "styled-components";
 import { puzzleIndex } from "../lib/logic";
-import { takeoverState } from "../lib/state";
 import Switch from "./switch";
+import { takeoverState } from "./takeover";
 
 const Setting = styled.div`
   display: flex;
