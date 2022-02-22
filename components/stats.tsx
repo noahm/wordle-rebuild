@@ -6,7 +6,7 @@ import {
   gamesPlayed,
   maxStreak,
   winPercentage,
-} from "../lib/state";
+} from "../lib/stats";
 import { modalState } from "./modal";
 
 const Container = styled.div`

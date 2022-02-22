@@ -13,6 +13,7 @@ import {
   gameStatus,
   rowIndex,
 } from "./state";
+import { updateStats } from "./stats";
 import { times } from "./utils";
 import { dictionary } from "./words";
 
@@ -82,30 +83,33 @@ export function useGameDispatch() {
             break;
           case "guess":
             const idx = await snapshot.getPromise(rowIndex);
-            transact_UNSTABLE(({ set }) => {
-              if (idx < 6) {
-                if (currentInput.length !== 5) {
-                  set(liveRowFeedback, "invalid");
-                  showToast("Not enough letters", 1000);
-                  return;
-                }
-                if (!dictionary.has(currentInput)) {
-                  set(liveRowFeedback, "invalid");
-                  showToast("Not in word list", 1000);
-                  return;
-                }
+            if (idx < 6) {
+              if (currentInput.length !== 5) {
+                queueSet(liveRowFeedback, "invalid");
+                showToast("Not enough letters", 1000);
+                return;
+              }
+              if (!dictionary.has(currentInput)) {
+                queueSet(liveRowFeedback, "invalid");
+                showToast("Not in word list", 1000);
+                return;
+              }
+              transact_UNSTABLE((tx) => {
+                const { set } = tx;
                 set(guessedWord(idx), currentInput);
                 set(wordInProgress, "");
                 set(lastPlayedTs, Date.now());
-                if (currentInput === solution) {
+                const isWin = currentInput === solution;
+                if (isWin) {
                   set(liveRowFeedback, "win");
                   setTimeout(() => showToast(feedbackForWin(idx), 2500), 1500);
                   setTimeout(() => showStats(), 4500);
                 } else if (idx === 5) {
                   setTimeout(() => showToast(solution.toUpperCase(), Infinity));
                 }
-              }
-            });
+                updateStats({ isWin, numGuesses: idx }, tx);
+              });
+            }
 
             break;
         }

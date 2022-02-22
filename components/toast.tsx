@@ -53,9 +53,7 @@ export function useShowToast() {
     persistDuration: number,
     type: ToastType = "game"
   ) => {
-    setTimeout(() =>
-      setToastContents([contents, persistDuration, type, false])
-    );
+    setToastContents([contents, persistDuration, type, false]);
   };
 }
 

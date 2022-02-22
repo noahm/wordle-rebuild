@@ -1,11 +1,9 @@
-import { ResetRecoilState, TransactionInterface_UNSTABLE } from "recoil";
+import type { ResetRecoilState } from "recoil";
 import { solution } from "./logic";
-import { guessedWord, hardMode, lastPlayedTs, lastCompletedTs } from "./state";
+import { guessedWord, hardMode, lastPlayedTs } from "./state";
+import { lastCompletedTs } from "./stats";
 import { getStorageKey, setStorageKey } from "./storage";
-
-type BeginRecoilTransaction = (
-  cb: (i: TransactionInterface_UNSTABLE) => void
-) => void;
+import type { BeginRecoilTransaction } from "./utils";
 
 /**
  * If original wordle state exists, tries to import it as best we can.
