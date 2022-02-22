@@ -104,6 +104,17 @@ export const rowFeedback = selectorFamily({
     },
 });
 
+export const winningGuessCount = selector({
+  key: "winningGuessCount",
+  get: ({ get }) => {
+    const state = get(gameStatus);
+    if (state !== "WIN") {
+      return 0;
+    }
+    return get(rowIndex);
+  },
+});
+
 export const evaluations = selector({
   key: "evaluations",
   get: ({ get }) => times(6, (idx) => get(evaluation(idx))),

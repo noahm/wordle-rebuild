@@ -92,7 +92,7 @@ export function updateStats(
   { isWin, numGuesses }: Input,
   { get, set }: TransactionInterface_UNSTABLE
 ) {
-  const isStreak =
+  const finishedYesterday =
     getDayDifference(new Date(get(lastCompletedTs)), new Date()) === 1;
   set(lastCompletedTs, Date.now());
   set(guesses, (prev) => {
@@ -105,8 +105,14 @@ export function updateStats(
     return next;
   });
   let streak = get(currentStreak);
-  if (isStreak) {
-    streak += 1;
+  if (isWin) {
+    if (finishedYesterday) {
+      streak += 1;
+    } else {
+      streak = 1;
+    }
+  } else {
+    streak = 0;
   }
   set(currentStreak, streak);
   set(maxStreak, (lastMax) => Math.max(lastMax, streak));

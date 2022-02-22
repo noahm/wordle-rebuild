@@ -22,12 +22,12 @@ export function evaluateWord(target: string, guess: string) {
 
 const firstDay = new Date(2021, 5, 19, 0, 0, 0, 0);
 
-function zeroHrs(d: Date) {
+function timeAtMidnight(d: Date) {
   return new Date(d).setHours(0, 0, 0, 0);
 }
 
 export function getDayDifference(a: Date, b: Date) {
-  return Math.round((zeroHrs(b) - zeroHrs(a)) / 864e5);
+  return Math.round((timeAtMidnight(b) - timeAtMidnight(a)) / 864e5);
 }
 
 function getPuzzleIndexForDate(d: Date) {
@@ -39,6 +39,14 @@ function getSolutionForPuzzleNumber(num: number) {
   return wotd[idx];
 }
 
+function nextWordleDate() {
+  const ret = new Date();
+  ret.setDate(ret.getDate() + 1);
+  ret.setHours(0, 0, 0, 0);
+  return ret;
+}
+
+export const nextWordle = nextWordleDate();
 export const puzzleIndex = getPuzzleIndexForDate(new Date());
 export const solution = getSolutionForPuzzleNumber(puzzleIndex);
 
