@@ -1,11 +1,10 @@
-import { RecoilState } from "recoil";
+import { ResetRecoilState, TransactionInterface_UNSTABLE } from "recoil";
 import { solution } from "./logic";
 import { guessedWord, hardMode, lastPlayedTs, lastCompletedTs } from "./state";
 import { getStorageKey, setStorageKey } from "./storage";
 
-type SetRecoilState = <T>(
-  recoilVal: RecoilState<T>,
-  newVal: T | ((prevValue: T) => T)
+type BeginRecoilTransaction = (
+  cb: (i: TransactionInterface_UNSTABLE) => void
 ) => void;
 
 /**
@@ -13,23 +12,25 @@ type SetRecoilState = <T>(
  * @returns true if state was found, false if not found
  */
 export function applyLegacyState(
-  set: SetRecoilState,
-  resetOldGuesses: () => void
+  transact: BeginRecoilTransaction,
+  resetOldGuesses: (reset: ResetRecoilState) => void
 ) {
   const oldState = getStorageKey("gameState");
   if (oldState) {
-    if (oldState.solution === solution) {
-      if (oldState.boardState) {
-        (oldState.boardState as string[]).forEach((word, idx) => {
-          set(guessedWord(idx), word);
-        });
+    transact(({ set, reset }) => {
+      if (oldState.solution === solution) {
+        if (oldState.boardState) {
+          (oldState.boardState as string[]).forEach((word, idx) => {
+            set(guessedWord(idx), word);
+          });
+        }
+      } else {
+        resetOldGuesses(reset);
       }
-    } else {
-      resetOldGuesses();
-    }
-    set(hardMode, !!oldState.hardMode);
-    set(lastPlayedTs, oldState.lastPlayedTs);
-    set(lastCompletedTs, oldState.lastCompletedTs);
+      set(hardMode, !!oldState.hardMode);
+      set(lastPlayedTs, oldState.lastPlayedTs);
+      set(lastCompletedTs, oldState.lastCompletedTs);
+    });
     setStorageKey("gameState", undefined);
     return true;
   }
