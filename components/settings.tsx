@@ -5,8 +5,8 @@ import { puzzleIndex } from "../lib/logic";
 import {
   colorBlind,
   displayDarkTheme,
-  gameStatus,
   hardMode,
+  lockHardMode,
 } from "../lib/state";
 import Switch from "./switch";
 import { takeoverState } from "./takeover";
@@ -53,7 +53,7 @@ export default function useShowSettings() {
 }
 
 function Settings() {
-  const hardModeLocked = useRecoilValue(gameStatus) === "IN_PROGRESS";
+  const hardModeLocked = useRecoilValue(lockHardMode);
   const showToast = useShowToast();
   const handleIllegalHardToggle = useCallback(() => {
     if (hardModeLocked) {

@@ -161,6 +161,18 @@ export const hardMode = atom<boolean>({
   effects: [persistStandalone],
 });
 
+export const lockHardMode = selector({
+  key: "lockHardMode",
+  get: ({ get }) => {
+    const status = get(gameStatus);
+    if (status !== "IN_PROGRESS") {
+      return true;
+    }
+    const idx = get(rowIndex);
+    return !!idx;
+  },
+});
+
 export const darkTheme = atom<boolean | undefined>({
   key: "darkTheme",
   default: undefined,
