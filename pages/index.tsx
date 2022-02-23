@@ -14,7 +14,7 @@ export default function Home() {
   return (
     <RecoilRoot>
       <Head>
-        <title>Wordle*</title>
+        <title>Wordle* - A daily word game</title>
       </Head>
       {renderGame && <Game />}
       <Takeover />

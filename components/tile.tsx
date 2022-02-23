@@ -136,7 +136,7 @@ const TileDiv = styled.div<DivProps>`
 interface Props {
   letter?: string;
   evaluation?: Evaluation;
-  reveal?: boolean;
+  reveal: boolean | null;
   bounceWithDelay?: number;
   onAnimationEnd?: () => void;
 }

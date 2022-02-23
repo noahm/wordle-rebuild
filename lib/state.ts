@@ -57,7 +57,6 @@ export const rowIndex = selector<number>({
   get: ({ get }) => {
     let idx = get(guessedWords).indexOf("");
     const status = get(gameStatus);
-    console.log(status);
     if (idx === -1) {
       idx = 6;
     }

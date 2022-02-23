@@ -240,7 +240,6 @@ function DistributionGraphs() {
     ...times(6, (idx) => guessCounts[(idx + 1) as 1])
   );
   const highlightIdx = useRecoilValue(winningGuessCount);
-  console.log({ highlightIdx });
   return (
     <>
       {times(6, (idx) => (
