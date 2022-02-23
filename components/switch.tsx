@@ -1,8 +1,9 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
+import { RecoilState, useRecoilState } from "recoil";
 import styled from "styled-components";
 
 interface Props {
-  defaultChecked?: boolean;
+  atom: RecoilState<boolean>;
   disabled?: boolean;
   onChange?: (checked: boolean) => void;
 }
@@ -39,12 +40,16 @@ const Knob = styled.span<{ checked: boolean }>`
     props.checked ? "transform: translateX(calc(100% - 4px));" : ""}
 `;
 
-export default function Switch({ defaultChecked, disabled, onChange }: Props) {
-  const [checked, setChecked] = useState(!!defaultChecked);
+export default function Switch({ atom, disabled, onChange }: Props) {
+  const [checked, setChecked] = useRecoilState(atom);
   const handleClick = useCallback(() => {
+    if (disabled) {
+      onChange && onChange(checked);
+      return;
+    }
     onChange && onChange(!checked);
     setChecked((prev) => !prev);
-  }, [checked, onChange]);
+  }, [checked, disabled, onChange, setChecked]);
   return (
     <Container>
       <Control disabled={!!disabled} checked={checked} onClick={handleClick}>

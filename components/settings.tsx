@@ -1,9 +1,16 @@
 import { useCallback } from "react";
-import { useSetRecoilState } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 import styled from "styled-components";
 import { puzzleIndex } from "../lib/logic";
+import {
+  colorBlind,
+  displayDarkTheme,
+  gameStatus,
+  hardMode,
+} from "../lib/state";
 import Switch from "./switch";
 import { takeoverState } from "./takeover";
+import { useShowToast } from "./toast";
 
 const Setting = styled.div`
   display: flex;
@@ -46,6 +53,17 @@ export default function useShowSettings() {
 }
 
 function Settings() {
+  const hardModeLocked = useRecoilValue(gameStatus) === "IN_PROGRESS";
+  const showToast = useShowToast();
+  const handleIllegalHardToggle = useCallback(() => {
+    if (hardModeLocked) {
+      showToast(
+        "Hard mode can only be enabled at the start of a round",
+        1500,
+        "system"
+      );
+    }
+  }, [hardModeLocked, showToast]);
   return (
     <>
       <div>
@@ -59,7 +77,28 @@ function Settings() {
                 Initial guesses cannot be reused in later days
               </Desc>
             </Label>
-            <Switch />
+            <Switch
+              atom={hardMode}
+              disabled={hardModeLocked}
+              onChange={handleIllegalHardToggle}
+            />
+          </Setting>
+        </section>
+        <section>
+          <Setting>
+            <Label>
+              <div>Dark Theme</div>
+            </Label>
+            <Switch atom={displayDarkTheme} />
+          </Setting>
+        </section>
+        <section>
+          <Setting>
+            <Label>
+              <div>Color Blind Mode</div>
+              <Desc>High contrast colors</Desc>
+            </Label>
+            <Switch atom={colorBlind} />
           </Setting>
         </section>
       </div>

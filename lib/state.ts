@@ -167,7 +167,7 @@ export const darkTheme = atom<boolean | undefined>({
   effects: [persistStandalone],
 });
 
-export const displayDarkTheme = selector({
+export const displayDarkTheme = selector<boolean>({
   key: "displayDarkTheme",
   get: ({ get }) => {
     const setting = get(darkTheme);
@@ -176,11 +176,14 @@ export const displayDarkTheme = selector({
     }
     return window.matchMedia("(prefers-color-scheme: dark)").matches;
   },
+  set: ({ set }, newValue) => {
+    set(darkTheme, newValue);
+  },
 });
 
-export const colorBlind = atom<boolean | undefined>({
+export const colorBlind = atom<boolean>({
   key: "colorBlind",
-  default: undefined,
+  default: false,
   effects: [persistStandalone],
 });
 
