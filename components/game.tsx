@@ -1,7 +1,6 @@
 import styled from "styled-components";
-import Row from "../components/row";
 import { useGameBoot } from "../lib/actions";
-import { times } from "../lib/utils";
+import Board from "./board";
 import Header from "./header";
 import Keyboard from "./keyboard";
 import ThemeManager from "./theme-manager";
@@ -15,35 +14,13 @@ const Root = styled.div`
   flex-direction: column;
 `;
 
-const BoardContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-grow: 1;
-  overflow: hidden;
-`;
-
-const Board = styled.div`
-  display: grid;
-  grid-template-rows: repeat(6, 1fr);
-  grid-gap: 5px;
-  padding: 10px;
-  box-sizing: border-box;
-`;
-
 export default function Game() {
   useGameBoot();
   return (
     <Root>
       <ThemeManager />
       <Header />
-      <BoardContainer>
-        <Board style={{ width: "350px", height: "420px" }}>
-          {times(6, (idx) => (
-            <Row key={idx} idx={idx} />
-          ))}
-        </Board>
-      </BoardContainer>
+      <Board />
       <Keyboard />
     </Root>
   );
