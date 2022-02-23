@@ -56,7 +56,7 @@ function nextWordleDate() {
 }
 
 export const nextWordle = nextWordleDate();
-export const puzzleIndex = getPuzzleIndexForDate(new Date());
+export const puzzleIndex = getPuzzleIndexForDate(new Date()) - 3;
 export const solution = getSolutionForPuzzleNumber(puzzleIndex);
 
 const feedback = [

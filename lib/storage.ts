@@ -1,5 +1,4 @@
 import { AtomEffect } from "recoil";
-import { ssrCompletedState } from "./deferSsr";
 
 type StorageValue = Record<string, any>;
 
@@ -38,7 +37,7 @@ export function updateStorageFields(key: string, updateFields: StorageValue) {
 }
 
 export function persistAsSubkeyOf<T>(macroKey: string) {
-  const effect: AtomEffect<T> = ({ node, setSelf, onSet, getPromise }) => {
+  const effect: AtomEffect<T> = ({ node, setSelf, onSet }) => {
     const [key, subkey] = node.key.split("__");
     function setInitial() {
       const storedValue = getStorageKey(macroKey);
@@ -64,10 +63,8 @@ export function persistAsSubkeyOf<T>(macroKey: string) {
       updateStorageFields(macroKey, { [key]: newValue });
     }
 
-    getPromise(ssrCompletedState).then(() => {
-      setInitial();
-      onSet(setNewValue);
-    });
+    setInitial();
+    onSet(setNewValue);
   };
 
   return effect;
