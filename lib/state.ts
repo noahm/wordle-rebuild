@@ -1,7 +1,7 @@
 import { atom, atomFamily, selector, selectorFamily } from "recoil";
-import { evaluateWord, Evaluation, solution } from "./logic";
+import { evaluateWord, Evaluation, puzzleIndex, solution } from "./logic";
 import { persistStandalone } from "./storage";
-import { times } from "./utils";
+import { squareForEval, times } from "./utils";
 
 /**
  * The one central source of truth about the game state beyond the current date.
@@ -167,8 +167,48 @@ export const darkTheme = atom<boolean | undefined>({
   effects: [persistStandalone],
 });
 
+export const displayDarkTheme = selector({
+  key: "displayDarkTheme",
+  get: ({ get }) => {
+    const setting = get(darkTheme);
+    if (setting !== undefined) {
+      return setting;
+    }
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  },
+});
+
+export const colorBlind = atom<boolean | undefined>({
+  key: "colorBlind",
+  default: undefined,
+  effects: [persistStandalone],
+});
+
 export const firstWords = atom<string[]>({
   key: "first-words",
   default: [],
   effects: [persistStandalone],
+});
+
+export const shareMessage = selector<string>({
+  key: "shareMessage",
+  get: ({ get }) => {
+    const state = get(gameStatus);
+    if (state === "IN_PROGRESS") {
+      return "";
+    }
+    const idx = get(rowIndex);
+    const evals = get(evaluations);
+    const isHardMode = get(hardMode);
+    const isDarkTheme = get(displayDarkTheme);
+    const isColorBlind = get(colorBlind);
+    const getSquare = squareForEval.bind(null, !!isColorBlind, isDarkTheme);
+
+    return evals.reduce((prev, rowEval) => {
+      if (!rowEval) {
+        return prev;
+      }
+      return prev.concat("\n", rowEval.map(getSquare).join(""));
+    }, `Wordle* ${puzzleIndex} ${state === "WIN" ? idx : "X"}/6${isHardMode ? "*" : ""}\n`);
+  },
 });

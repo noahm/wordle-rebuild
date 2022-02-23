@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { RecoilValue, useRecoilValue, useSetRecoilState } from "recoil";
 import { useCountdown } from "rooks";
 import styled from "styled-components";
+import { useGameDispatch } from "../lib/actions";
 import { nextWordle } from "../lib/logic";
 import { gameStatus, winningGuessCount } from "../lib/state";
 import {
@@ -187,6 +188,10 @@ export default function useShowStats() {
 function Stats() {
   const hasStats = useRecoilValue(gamesPlayed) > 0;
   const state = useRecoilValue(gameStatus);
+  const dispatch = useGameDispatch();
+  const handleShare = useCallback(() => {
+    dispatch({ type: "share" });
+  }, [dispatch]);
   return (
     <Container>
       <H1>Statistics</H1>
@@ -207,7 +212,7 @@ function Stats() {
             <CountdownTimer />
           </Countdown>
           <Share>
-            <ShareButton>
+            <ShareButton onClick={handleShare}>
               Share
               <Icon icon="share" />
             </ShareButton>
@@ -270,7 +275,7 @@ function zp(n: number) {
 
 function CountdownTimer() {
   const count = useCountdown(nextWordle) - 1;
-  if (!count) {
+  if (count < 0) {
     return (
       <Share>
         <ShareButton onClick={location.reload}>Reload!</ShareButton>

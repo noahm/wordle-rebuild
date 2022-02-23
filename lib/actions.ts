@@ -12,9 +12,10 @@ import {
   lastPlayedTs,
   gameStatus,
   rowIndex,
+  shareMessage,
 } from "./state";
 import { updateStats } from "./stats";
-import { times } from "./utils";
+import { shareText, times } from "./utils";
 import { dictionary } from "./words";
 
 interface Boot {
@@ -34,7 +35,11 @@ interface DelLetter {
   type: "del";
 }
 
-type Action = Boot | Guess | AddLetter | DelLetter;
+interface Share {
+  type: "share";
+}
+
+type Action = Boot | Guess | AddLetter | DelLetter | Share;
 
 export function useGameDispatch() {
   const showHelp = useShowHelp();
@@ -103,7 +108,7 @@ export function useGameDispatch() {
                 if (isWin) {
                   set(liveRowFeedback, "win");
                   setTimeout(() => showToast(feedbackForWin(idx), 2500), 1500);
-                  setTimeout(() => showStats(), 4500);
+                  setTimeout(() => showStats(), 4000);
                 } else if (idx === 5) {
                   setTimeout(() => showToast(solution.toUpperCase(), Infinity));
                 }
@@ -112,6 +117,14 @@ export function useGameDispatch() {
             }
 
             break;
+          case "share":
+            const text = await snapshot.getPromise(shareMessage);
+            try {
+              await shareText(text);
+              showToast("Copied results to clipboard", 2000, "system");
+            } catch {
+              showToast("Share failed", 2000, "system");
+            }
         }
       };
     },
