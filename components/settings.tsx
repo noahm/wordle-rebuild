@@ -103,7 +103,7 @@ function Settings() {
         </section>
       </div>
       <Footnote>
-        <div>Pirated 2022. No Rights Deserved.</div>
+        <div>Reforged 2022. No Rights Assumed.</div>
         <div>#{puzzleIndex}</div>
       </Footnote>
     </>
