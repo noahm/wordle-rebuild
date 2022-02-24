@@ -281,7 +281,7 @@ function CountdownTimer() {
       </Share>
     );
   }
-  const hours = zp(Math.floor((count % 86400) / 3600));
+  const hours = Math.floor((count % 86400) / 3600);
   const minutes = zp(Math.floor((count % 3600) / 60));
   const seconds = zp(count % 60);
   return (

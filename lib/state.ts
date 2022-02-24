@@ -52,14 +52,22 @@ export const guessedWords = selector({
   get: ({ get }) => times(6, (idx) => get(guessedWord(idx))),
 });
 
-export const rowIndex = selector<number>({
-  key: "rowIndex",
+export const guessCount = selector({
+  key: "guessCount",
   get: ({ get }) => {
     let idx = get(guessedWords).indexOf("");
-    const status = get(gameStatus);
     if (idx === -1) {
       idx = 6;
     }
+    return idx;
+  },
+});
+
+export const rowIndex = selector({
+  key: "rowIndex",
+  get: ({ get }) => {
+    let idx = get(guessCount);
+    const status = get(gameStatus);
     if (status === "WIN") {
       idx -= 1;
     }
@@ -110,7 +118,7 @@ export const winningGuessCount = selector({
     if (state !== "WIN") {
       return 0;
     }
-    return get(rowIndex);
+    return get(guessCount);
   },
 });
 
@@ -211,7 +219,7 @@ export const shareMessage = selector<string>({
     if (state === "IN_PROGRESS") {
       return "";
     }
-    const idx = get(rowIndex);
+    const idx = get(guessCount);
     const evals = get(evaluations);
     const isHardMode = get(hardMode);
     const isDarkTheme = get(displayDarkTheme);
