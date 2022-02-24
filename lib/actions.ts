@@ -109,14 +109,15 @@ export function useGameDispatch() {
               set(wordInProgress, "");
               set(lastPlayedTs, Date.now());
               const isWin = currentInput === solution;
+              const numGuesses = idx + 1;
               if (isWin) {
                 set(liveRowFeedback, "win");
                 setTimeout(() => showToast(feedbackForWin(idx), 2500), 1500);
                 setTimeout(() => showStats(), 4000);
-                updateStats({ isWin, numGuesses: idx }, tx);
+                updateStats({ isWin, numGuesses }, tx);
               } else if (idx === 5) {
                 setTimeout(() => showToast(solution.toUpperCase(), Infinity));
-                updateStats({ isWin, numGuesses: idx }, tx);
+                updateStats({ isWin, numGuesses }, tx);
               }
             });
 
