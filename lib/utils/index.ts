@@ -1,5 +1,5 @@
 import type { TransactionInterface_UNSTABLE } from "recoil";
-import type { Evaluation } from "./logic";
+import type { Evaluation } from "../logic";
 
 export type BeginRecoilTransaction = (
   cb: (i: TransactionInterface_UNSTABLE) => void

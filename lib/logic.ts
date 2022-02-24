@@ -7,6 +7,7 @@ import {
   rowIndex,
   wordInProgress,
 } from "./state";
+import { CountingSet } from "./utils/counting-set";
 import { dictionary, wotd } from "./words";
 
 export type Evaluation = "correct" | "present" | "absent";
@@ -16,14 +17,26 @@ export function evaluateWord(target: string, guess: string) {
     return null; // invalid guess
   }
   let ret: Evaluation[] = [];
+  const availableCluesPerLetter = new CountingSet(target.split(""));
+  // must make two passes, correct letters first
   for (let idx = 0; idx < 5; idx++) {
-    const gl = guess[idx];
-    if (target[idx] === gl) {
-      ret.push("correct");
-    } else if (target.includes(gl)) {
-      ret.push("present");
+    const guessLetter = guess[idx];
+    if (target[idx] === guessLetter) {
+      availableCluesPerLetter.sub(guessLetter);
+      ret[idx] = "correct";
+    }
+  }
+  // then remaining letters
+  for (let idx = 0; idx < 5; idx++) {
+    if (ret[idx]) {
+      continue;
+    }
+    const guessLetter = guess[idx];
+    if (availableCluesPerLetter.has(guessLetter)) {
+      availableCluesPerLetter.sub(guessLetter);
+      ret[idx] = "present";
     } else {
-      ret.push("absent");
+      ret[idx] = "absent";
     }
   }
   return ret;
