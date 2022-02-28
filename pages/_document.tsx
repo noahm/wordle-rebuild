@@ -1,6 +1,7 @@
 import Document, {
   DocumentContext,
   Html,
+  Head,
   Main,
   NextScript,
 } from "next/document";
@@ -37,6 +38,16 @@ export default class MyDocument extends Document {
     return (
       <Html lang="en">
         <body>
+          <Head>
+            <meta name="theme-color" content="#6aaa64" />
+            <link rel="manifest" href="/manifest.json" />
+            <link
+              href="/wordle_logo_32x32.png"
+              rel="icon shortcut"
+              sizes="3232"
+            />
+            <link href="/wordle_logo_192x192.png" rel="apple-touch-icon" />
+          </Head>
           <Main />
           <NextScript />
         </body>
