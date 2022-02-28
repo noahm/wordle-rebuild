@@ -80,14 +80,16 @@
   --key-bg-absent: var(--color-absent);
 }
 html,
+body,
 div[data-reactroot] {
   height: 100%;
 }
 body {
-  height: 100%;
   background-color: var(--color-background);
   margin: 0;
   padding: 0;
   /* Prevent scrollbar appearing on page transition */
   overflow-y: hidden;
+  box-sizing: border-box;
+  padding-bottom: env(safe-area-inset-bottom);
 }

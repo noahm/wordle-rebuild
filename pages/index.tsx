@@ -15,6 +15,18 @@ export default function Home() {
     <RecoilRoot>
       <Head>
         <title>Wordle* - A daily word game</title>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"
+        />
+        <meta
+          name="description"
+          content="Guess the hidden word in 6 tries. A new puzzle is available each day."
+        />
+        <meta name="theme-color" content="#6aaa64" />
+        <link rel="manifest" href="/manifest.json" />
+        <link href="/wordle_logo_32x32.png" rel="icon shortcut" sizes="3232" />
+        <link href="/wordle_logo_192x192.png" rel="apple-touch-icon" />
       </Head>
       {renderGame && <Game />}
       <Takeover />
