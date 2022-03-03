@@ -13,9 +13,6 @@ import { dictionary, wotd } from "./words";
 export type Evaluation = "correct" | "present" | "absent";
 
 export function evaluateWord(target: string, guess: string) {
-  if (!dictionary.has(guess)) {
-    return null; // invalid guess
-  }
   let ret: Evaluation[] = [];
   const availableCluesPerLetter = new CountingSet(target.split(""));
   // must make two passes, correct letters first
@@ -116,20 +113,21 @@ export async function getErrorForGuess(s: Snapshot): Promise<false | string> {
       return false;
     }
 
-    const guessed = await s.getPromise(guessedWords);
-    const evals = await s.getPromise(evaluations);
-    const prevGuess = guessed[prevRow];
-    const previousEvals = evals[prevRow]!;
+    const pastGuesses = await s.getPromise(guessedWords);
+    const pastEvalSets = await s.getPromise(evaluations);
+    const prevGuess = pastGuesses[prevRow];
+    const previousGuessEvals = pastEvalSets[prevRow]!;
     const previousReveals = new Set<string>();
-    // check each letter of input
+    // iterate each letter of input
     for (let i = 0; i < 5; i++) {
       const currentLetter = currentInput[i];
       const prevLetter = prevGuess[i];
-      const prevLetterEval = previousEvals[i];
+      const prevLetterEval = previousGuessEvals[i];
+      // catalog previously revealed letters
       if (prevLetterEval !== "absent") {
         previousReveals.add(prevLetter);
       }
-      // must use discovered correct
+      // force known correct letters to repeat
       if (prevLetterEval === "correct" && currentLetter !== prevLetter) {
         return `${getOrdinal(
           i + 1
@@ -142,7 +140,25 @@ export async function getErrorForGuess(s: Snapshot): Promise<false | string> {
         return `Guess must contain ${prevLetter.toUpperCase()}`;
       }
     }
-    // TODO must use discovered presents in new locations
+    // must use discovered presents in new locations
+    for (let guessIdx = 0; guessIdx < pastGuesses.length; guessIdx++) {
+      const pastGuess = pastGuesses[guessIdx];
+      const pastEvals = pastEvalSets[guessIdx];
+      if (!pastEvals) {
+        continue;
+      }
+      for (let letterIdx = 0; letterIdx < 5; letterIdx++) {
+        const evaluation = pastEvals[letterIdx];
+        if (evaluation === "present") {
+          // check that this letter isn't being repeated in this location
+          if (pastGuess[letterIdx] === currentInput[letterIdx]) {
+            return `${currentInput[
+              letterIdx
+            ].toUpperCase()} can't be the ${getOrdinal(letterIdx + 1)} letter`;
+          }
+        }
+      }
+    }
     // TODO (maybe?) must not use absent
   }
 

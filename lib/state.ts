@@ -89,6 +89,9 @@ export const evaluation = selectorFamily({
     (idx: number) =>
     ({ get }) => {
       const word = get(guessedWord(idx));
+      if (!word) {
+        return null;
+      }
       return evaluateWord(solution, word);
     },
 });
