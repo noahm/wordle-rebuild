@@ -207,10 +207,7 @@ function Stats() {
       </Distributions>
       {state !== "IN_PROGRESS" && (
         <Footer>
-          <Countdown>
-            <H1>Next WORDLE</H1>
-            <CountdownTimer />
-          </Countdown>
+          <CountdownTimer />
           <Share>
             <ShareButton onClick={handleShare}>
               Share
@@ -272,12 +269,14 @@ function zp(n: number) {
   return n.toString().padStart(2, "0");
 }
 
+const reload = () => location.reload();
+
 function CountdownTimer() {
   const count = useCountdown(nextWordle) - 1;
   if (count < 0) {
     return (
       <Share>
-        <ShareButton onClick={location.reload}>Reload!</ShareButton>
+        <ShareButton onClick={reload}>Reload!</ShareButton>
       </Share>
     );
   }
@@ -285,10 +284,13 @@ function CountdownTimer() {
   const minutes = zp(Math.floor((count % 3600) / 60));
   const seconds = zp(count % 60);
   return (
-    <StatContainer>
-      <StatDiv className="timer">
-        {hours}:{minutes}:{seconds}
-      </StatDiv>
-    </StatContainer>
+    <Countdown>
+      <H1>Next WORDLE</H1>
+      <StatContainer>
+        <StatDiv className="timer">
+          {hours}:{minutes}:{seconds}
+        </StatDiv>
+      </StatContainer>
+    </Countdown>
   );
 }
