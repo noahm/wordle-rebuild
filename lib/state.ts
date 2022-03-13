@@ -165,10 +165,24 @@ export const lastPlayedTs = atom<number>({
   effects: [persistStandalone],
 });
 
-export const hardMode = atom<boolean>({
+const hardModeStored = atom<boolean>({
   key: "hardMode",
   default: false,
   effects: [persistStandalone],
+});
+
+export const hardMode = selector<boolean>({
+  key: "hardModeExposed",
+  get: ({ get }) => get(hardModeStored),
+  set: ({ get, set }, next) => {
+    if (!next) {
+      const ex = get(extremeModeStored);
+      if (ex) {
+        set(extremeModeStored, false);
+      }
+    }
+    set(hardModeStored, next);
+  },
 });
 
 export const lockHardMode = selector({
@@ -180,6 +194,26 @@ export const lockHardMode = selector({
     }
     const idx = get(rowIndex);
     return !!idx;
+  },
+});
+
+const extremeModeStored = atom<boolean>({
+  key: "extremeMode",
+  default: false,
+  effects: [persistStandalone],
+});
+
+export const extremeMode = selector<boolean>({
+  key: "extremeModeExposed",
+  get: ({ get }) => get(extremeModeStored),
+  set: ({ get, set }, next) => {
+    if (next) {
+      const hard = get(hardModeStored);
+      if (!hard) {
+        set(hardModeStored, true);
+      }
+    }
+    set(extremeModeStored, next);
   },
 });
 
@@ -224,16 +258,23 @@ export const shareMessage = selector<string>({
     }
     const idx = get(guessCount);
     const evals = get(evaluations);
-    const isHardMode = get(hardMode);
     const isDarkTheme = get(displayDarkTheme);
     const isColorBlind = get(colorBlind);
     const getSquare = squareForEval.bind(null, !!isColorBlind, isDarkTheme);
+
+    let difficultyMarker = "";
+    if (get(hardMode)) {
+      difficultyMarker = "*";
+      if (get(extremeMode)) {
+        difficultyMarker = "⁑";
+      }
+    }
 
     return evals.reduce((prev, rowEval) => {
       if (!rowEval) {
         return prev;
       }
       return prev.concat("\n", rowEval.map(getSquare).join(""));
-    }, `Wordle* ${puzzleIndex} ${state === "WIN" ? idx : "X"}/6${isHardMode ? "*" : ""}\n`);
+    }, `Wordle* ${puzzleIndex} ${state === "WIN" ? idx : "X"}/6${difficultyMarker}\n`);
   },
 });

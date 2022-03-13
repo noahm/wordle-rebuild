@@ -1,10 +1,11 @@
 import { useCallback } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import { puzzleIndex } from "../lib/logic";
 import {
   colorBlind,
   displayDarkTheme,
+  extremeMode,
   hardMode,
   lockHardMode,
 } from "../lib/state";
@@ -12,12 +13,21 @@ import Switch from "./switch";
 import { takeoverState } from "./takeover";
 import { useShowToast } from "./toast";
 
-const Setting = styled.div`
+const Setting = styled.div<{ disabled?: boolean }>`
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--color-tone-4);
   padding: 16px 0;
+  ${(props) =>
+    props.disabled
+      ? css`
+          cursor: not-allowed;
+          label {
+            cursor: not-allowed;
+          }
+        `
+      : ""}
 
   @media only screen and (min-device-width: 320px) and (max-device-width: 480px) {
     padding: 16px;
@@ -58,7 +68,7 @@ function Settings() {
   const handleIllegalHardToggle = useCallback(() => {
     if (hardModeLocked) {
       showToast(
-        "Hard mode can only be enabled at the start of a round",
+        "Difficulty can only be changed at the start of a round",
         1500,
         "system"
       );
@@ -68,8 +78,8 @@ function Settings() {
     <>
       <div>
         <section>
-          <Setting>
-            <Label>
+          <Setting disabled={hardModeLocked}>
+            <Label htmlFor={hardMode.key}>
               <div>Hard Mode</div>
               <Desc>
                 Any revealed hints must be used in subsequent guesses
@@ -85,8 +95,25 @@ function Settings() {
           </Setting>
         </section>
         <section>
-          <Setting>
+          <Setting disabled={hardModeLocked}>
             <Label>
+              <div>Extreme Mode</div>
+              <Desc>
+                Letters revealed in the incorrect place must be moved
+                <br />
+                Letters revealed as absent cannot be used
+              </Desc>
+            </Label>
+            <Switch
+              atom={extremeMode}
+              disabled={hardModeLocked}
+              onChange={handleIllegalHardToggle}
+            />
+          </Setting>
+        </section>
+        <section>
+          <Setting>
+            <Label htmlFor={displayDarkTheme.key}>
               <div>Dark Theme</div>
             </Label>
             <Switch atom={displayDarkTheme} />
@@ -94,7 +121,7 @@ function Settings() {
         </section>
         <section>
           <Setting>
-            <Label>
+            <Label htmlFor={colorBlind.key}>
               <div>Color Blind Mode</div>
               <Desc>High contrast colors</Desc>
             </Label>

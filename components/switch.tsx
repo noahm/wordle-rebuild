@@ -13,7 +13,11 @@ const Container = styled.div`
   justify-content: space-between;
 `;
 
-const Control = styled.div<{ checked: boolean; disabled: boolean }>`
+const Control = styled.input.attrs((props) => ({
+  type: "checkbox",
+  // weird hack due to styled components not updating DOM checked attribute
+  "data-checked": props.checked ? "true" : undefined,
+}))`
   height: 20px;
   width: 32px;
   /* not quite right */
@@ -21,23 +25,31 @@ const Control = styled.div<{ checked: boolean; disabled: boolean }>`
   border-radius: 999px;
   display: block;
   position: relative;
-  ${(props) => (props.checked ? "background: var(--color-correct);" : "")}
-  ${(props) => (props.disabled ? "opacity: 0.5;" : "")}
-`;
+  appearance: unset;
 
-const Knob = styled.span<{ checked: boolean }>`
-  display: block;
-  position: absolute;
-  left: 2px;
-  top: 2px;
-  height: calc(100% - 4px);
-  width: 50%;
-  border-radius: 8px;
-  background: var(--white);
-  transform: translateX(0);
-  transition: transform 0.3s;
-  ${(props) =>
-    props.checked ? "transform: translateX(calc(100% - 4px));" : ""}
+  &::before {
+    content: "";
+    display: block;
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    height: calc(100% - 4px);
+    width: 50%;
+    border-radius: 8px;
+    background: var(--white);
+    transform: translateX(0);
+    transition: transform 0.3s;
+  }
+  &[data-checked] {
+    background: var(--color-correct);
+  }
+  &[data-checked]::before {
+    transform: translateX(calc(100% - 4px));
+  }
+  &[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
 `;
 
 export default function Switch({ atom, disabled, onChange }: Props) {
@@ -47,14 +59,22 @@ export default function Switch({ atom, disabled, onChange }: Props) {
       onChange && onChange(checked);
       return;
     }
+  }, [checked, disabled, onChange]);
+  const handleChange = useCallback(() => {
+    setChecked((prev) => {
+      console.log("flipping to ", !prev);
+      return !prev;
+    });
     onChange && onChange(!checked);
-    setChecked((prev) => !prev);
-  }, [checked, disabled, onChange, setChecked]);
+  }, [setChecked, onChange, checked]);
   return (
-    <Container>
-      <Control disabled={!!disabled} checked={checked} onClick={handleClick}>
-        <Knob checked={checked} />
-      </Control>
+    <Container onClickCapture={handleClick}>
+      <Control
+        name={atom.key}
+        disabled={!!disabled}
+        checked={checked}
+        onChange={handleChange}
+      />
     </Container>
   );
 }
