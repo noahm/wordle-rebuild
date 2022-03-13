@@ -91,6 +91,12 @@ function Help() {
         <p>
           <strong>A new WORDLE will be available each day!</strong>
         </p>
+        <p>Differences from the original wordle include:</p>
+        <ul>
+          <li>Unique first guess required each day in Hard Mode</li>
+          <li>Extreme Mode with more restrictions on guesses</li>
+          <li>Timer tracking for the speed guessers out there</li>
+        </ul>
       </Instructions>
     </Section>
   );
