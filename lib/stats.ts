@@ -1,5 +1,6 @@
 import { atom, selector, TransactionInterface_UNSTABLE } from "recoil";
 import { getDayDifference } from "./logic";
+import { firstPlayedTs } from "./state";
 import { persistAsSubkeyOf, persistStandalone } from "./storage";
 
 export const lastCompletedTs = atom<number>({
@@ -14,6 +15,11 @@ export const currentStreak = atom<number>({
 });
 export const maxStreak = atom<number>({
   key: "maxStreak",
+  default: 0,
+  effects: [persistAsSubkeyOf("statistics")],
+});
+export const averageTime = atom<number>({
+  key: "averageTime",
   default: 0,
   effects: [persistAsSubkeyOf("statistics")],
 });
@@ -36,18 +42,15 @@ export const guesses = atom<Guesses>({
 export const gamesPlayed = selector({
   key: "gamesPlayed",
   get: ({ get }) => {
-    const guess = get(guesses);
-    return (
-      guess[1] +
-      guess[2] +
-      guess[3] +
-      guess[4] +
-      guess[5] +
-      guess[6] +
-      guess.fail
-    );
+    return sumOfGuesses(get(guesses));
   },
 });
+
+function sumOfGuesses(guess: Guesses) {
+  return (
+    guess[1] + guess[2] + guess[3] + guess[4] + guess[5] + guess[6] + guess.fail
+  );
+}
 
 export const gamesWon = selector({
   key: "gamesWon",
@@ -92,6 +95,8 @@ export function updateStats(
   { isWin, numGuesses }: Input,
   { get, set }: TransactionInterface_UNSTABLE
 ) {
+  const prevPlayedCount = sumOfGuesses(get(guesses));
+  const timeSpent = Math.round((Date.now() - get(firstPlayedTs)) / 1000);
   const finishedYesterday =
     getDayDifference(new Date(get(lastCompletedTs)), new Date()) === 1;
   set(lastCompletedTs, Date.now());
@@ -103,6 +108,11 @@ export function updateStats(
       next.fail += 1;
     }
     return next;
+  });
+  set(averageTime, (prev) => {
+    if (!prev) return timeSpent; // for folks with no average so far
+    const oldTimSum = prev * prevPlayedCount;
+    return Math.round((oldTimSum + timeSpent) / (prevPlayedCount + 1));
   });
   let streak = get(currentStreak);
   if (isWin) {

@@ -13,6 +13,25 @@ export function times<T>(n: number, cb: (idx: number) => T): T[] {
   return ret;
 }
 
+function zeroPad(n: number) {
+  return n.toString().padStart(2, "0");
+}
+
+export function clockDisplayForSeconds(sec: number) {
+  const increments = [
+    Math.floor((sec % 86400) / 3600),
+    Math.floor((sec % 3600) / 60),
+    sec % 60,
+  ];
+  while (!increments[0]) {
+    increments.shift();
+    if (!increments.length) {
+      return 0;
+    }
+  }
+  return increments.map((n, i) => (i ? zeroPad(n) : n)).join(":");
+}
+
 export /**
  * @param cb color blind theme enabled
  * @param dt dark theme enabled

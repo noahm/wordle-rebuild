@@ -1,18 +1,24 @@
 import { useCallback } from "react";
 import { RecoilValue, useRecoilValue, useSetRecoilState } from "recoil";
-import { useCountdown } from "rooks";
+import { useCountdown, useCounter, useIntervalWhen } from "rooks";
 import styled from "styled-components";
 import { useGameDispatch } from "../lib/actions";
 import { nextWordle } from "../lib/logic";
-import { gameStatus, winningGuessCount } from "../lib/state";
 import {
+  firstPlayedTs,
+  gameStatus,
+  todaysTime,
+  winningGuessCount,
+} from "../lib/state";
+import {
+  averageTime,
   currentStreak,
   gamesPlayed,
   guesses,
   maxStreak,
   winPercentage,
 } from "../lib/stats";
-import { times } from "../lib/utils";
+import { clockDisplayForSeconds, times } from "../lib/utils";
 import Icon from "./icon";
 import { modalState } from "./modal";
 
@@ -162,19 +168,39 @@ const ShareButton = styled.button`
   }
 `;
 
-function Stat({
+function RecoilStat({
   source,
   label,
 }: {
   source: RecoilValue<number>;
   label: string;
+  format?: (n: number) => number | string;
 }) {
   const n = useRecoilValue(source);
+  return <Stat value={n} label={label} />;
+}
+
+function Stat({ value, label }: { value: number | string; label: string }) {
   return (
     <StatContainer>
-      <StatDiv>{n}</StatDiv>
+      <StatDiv>{value}</StatDiv>
       <StatLabel>{label}</StatLabel>
     </StatContainer>
+  );
+}
+
+function TimeStats() {
+  const avgTime = useRecoilValue(averageTime);
+  const today = useRecoilValue(todaysTime);
+  return (
+    <>
+      {!!avgTime && (
+        <Stat value={clockDisplayForSeconds(avgTime)} label="Average Time" />
+      )}
+      {!!today && (
+        <Stat value={clockDisplayForSeconds(today)} label="Today's Time" />
+      )}
+    </>
   );
 }
 
@@ -196,16 +222,21 @@ function Stats() {
     <Container>
       <H1>Statistics</H1>
       <Statistics>
-        <Stat source={gamesPlayed} label="Played" />
-        <Stat source={winPercentage} label="Won %" />
-        <Stat source={currentStreak} label="Current Streak" />
-        <Stat source={maxStreak} label="Max Streak" />
+        <RecoilStat source={gamesPlayed} label="Played" />
+        <RecoilStat source={winPercentage} label="Won %" />
+        <RecoilStat source={currentStreak} label="Current Streak" />
+        <RecoilStat source={maxStreak} label="Max Streak" />
+        <TimeStats />
       </Statistics>
       <H1>Guess Distribution</H1>
       <Distributions>
         {hasStats ? <DistributionGraphs /> : <NoData>No Data</NoData>}
       </Distributions>
-      {state !== "IN_PROGRESS" && (
+      {state === "IN_PROGRESS" ? (
+        <Footer>
+          <CountupTimer />
+        </Footer>
+      ) : (
         <Footer>
           <CountdownTimer />
           <Share>
@@ -264,11 +295,6 @@ function DistributionGraphs() {
   );
 }
 
-/** zero pad */
-function zp(n: number) {
-  return n.toString().padStart(2, "0");
-}
-
 const reload = () => location.reload();
 
 function CountdownTimer() {
@@ -280,17 +306,32 @@ function CountdownTimer() {
       </Share>
     );
   }
-  const hours = Math.floor((count % 86400) / 3600);
-  const minutes = zp(Math.floor((count % 3600) / 60));
-  const seconds = zp(count % 60);
+
   return (
     <Countdown>
       <H1>Next WORDLE</H1>
       <StatContainer>
-        <StatDiv className="timer">
-          {hours}:{minutes}:{seconds}
-        </StatDiv>
+        <StatDiv className="timer">{clockDisplayForSeconds(count)}</StatDiv>
       </StatContainer>
     </Countdown>
+  );
+}
+
+function CountupTimer() {
+  const firstPlay = useRecoilValue(firstPlayedTs);
+  const { increment, value: time } = useCounter(
+    Math.round((Date.now() - firstPlay) / 1000)
+  );
+  useIntervalWhen(increment, 1000, !!firstPlay);
+  if (!firstPlay) {
+    return null;
+  }
+  return (
+    <div style={{ flexGrow: 1 }}>
+      <H1>Played Today</H1>
+      <StatContainer>
+        <StatDiv className="timer">{clockDisplayForSeconds(time)}</StatDiv>
+      </StatContainer>
+    </div>
   );
 }

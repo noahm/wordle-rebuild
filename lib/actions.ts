@@ -20,6 +20,7 @@ import {
   shareMessage,
   hardMode,
   firstWords,
+  firstPlayedTs,
 } from "./state";
 import { updateStats } from "./stats";
 import { shareText, times } from "./utils";
@@ -47,6 +48,11 @@ interface Share {
 
 type Action = Boot | Guess | AddLetter | DelLetter | Share;
 
+function resetStaleState(reset: ResetRecoilState) {
+  times(6, (idx) => reset(guessedWord(idx)));
+  reset(firstPlayedTs);
+}
+
 export function useGameDispatch() {
   const showHelp = useShowHelp();
   const showStats = useShowStats();
@@ -54,15 +60,12 @@ export function useGameDispatch() {
 
   return useRecoilCallback(
     ({ snapshot, set: queueSet, transact_UNSTABLE }) => {
-      function resetOldGuesses(reset: ResetRecoilState) {
-        times(6, (idx) => reset(guessedWord(idx)));
-      }
       return async (action: Action) => {
         const currentInput = await snapshot.getPromise(wordInProgress);
         const state = await snapshot.getPromise(gameStatus);
         switch (action.type) {
           case "boot":
-            if (applyLegacyState(transact_UNSTABLE, resetOldGuesses)) {
+            if (applyLegacyState(transact_UNSTABLE, resetStaleState)) {
               return;
             }
             transact_UNSTABLE(({ get, reset }) => {
@@ -71,13 +74,13 @@ export function useGameDispatch() {
               if (lastPlayed) {
                 if (getDayDifference(new Date(lastPlayed), new Date()) >= 1) {
                   // current state is from previous day, must reset
-                  resetOldGuesses(reset);
+                  resetStaleState(reset);
                 } else if (state !== "IN_PROGRESS") {
                   setTimeout(showStats, 100);
                 }
               } else {
                 setTimeout(showHelp, 100);
-                resetOldGuesses(reset);
+                resetStaleState(reset);
               }
             });
 
@@ -100,14 +103,18 @@ export function useGameDispatch() {
               return;
             }
             const idx = await snapshot.getPromise(rowIndex);
+            const now = Date.now();
             transact_UNSTABLE((tx) => {
               const { set, get } = tx;
-              if (idx === 0 && get(hardMode)) {
-                set(firstWords, (previous) => [...previous, currentInput]);
+              if (idx === 0) {
+                set(firstPlayedTs, now);
+                if (get(hardMode)) {
+                  set(firstWords, (previous) => [...previous, currentInput]);
+                }
               }
               set(guessedWord(idx), currentInput);
               set(wordInProgress, "");
-              set(lastPlayedTs, Date.now());
+              set(lastPlayedTs, now);
               const isWin = currentInput === solution;
               const numGuesses = idx + 1;
               if (isWin) {

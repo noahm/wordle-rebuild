@@ -1,7 +1,7 @@
 import { atom, atomFamily, selector, selectorFamily } from "recoil";
 import { evaluateWord, Evaluation, puzzleIndex, solution } from "./logic";
 import { persistStandalone } from "./storage";
-import { squareForEval, times } from "./utils";
+import { clockDisplayForSeconds, squareForEval, times } from "./utils";
 
 /**
  * The one central source of truth about the game state beyond the current date.
@@ -156,10 +156,24 @@ export const firstPlayedTs = atom<number>({
   default: 0,
   effects: [persistStandalone],
 });
+
 export const lastPlayedTs = atom<number>({
   key: "lastPlayedTs",
   default: 0,
   effects: [persistStandalone],
+});
+
+export const todaysTime = selector({
+  key: "todaysTime",
+  get: ({ get }) => {
+    const state = get(gameStatus);
+    if (state === "IN_PROGRESS") {
+      return 0;
+    }
+    const firstPlayed = get(firstPlayedTs);
+    const lastPlayed = get(lastPlayedTs);
+    return Math.round((lastPlayed - firstPlayed) / 1000);
+  },
 });
 
 export const hardMode = atom<boolean>({
@@ -225,12 +239,13 @@ export const shareMessage = selector<string>({
     const isDarkTheme = get(displayDarkTheme);
     const isColorBlind = get(colorBlind);
     const getSquare = squareForEval.bind(null, !!isColorBlind, isDarkTheme);
+    const time = clockDisplayForSeconds(get(todaysTime));
 
     return evals.reduce((prev, rowEval) => {
       if (!rowEval) {
         return prev;
       }
       return prev.concat("\n", rowEval.map(getSquare).join(""));
-    }, `Wordle* ${puzzleIndex} ${state === "WIN" ? idx : "X"}/6${isHardMode ? "*" : ""}\n`);
+    }, `Wordle* ${puzzleIndex} ${state === "WIN" ? idx : "X"}/6${isHardMode ? "*" : ""} in ${time}\n`);
   },
 });
