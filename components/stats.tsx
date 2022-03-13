@@ -121,20 +121,24 @@ const NumGuesses = styled.div`
 const Footer = styled.div`
   display: flex;
   width: 100%;
-`;
+  justify-content: stretch;
 
-const Countdown = styled.div`
-  border-right: 1px solid var(--color-tone-1);
-  padding-right: 12px;
-  width: 50%;
+  & > * {
+    flex-grow: 1;
+  }
+  & > *:not(:last-child) {
+    border-right: 1px solid var(--color-tone-1);
+    padding-right: 12px;
+  }
+  & > *:not(:first-child) {
+    padding-left: 12px;
+  }
 `;
 
 const Share = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  padding-left: 12px;
-  width: 50%;
 `;
 
 const ShareButton = styled.button`
@@ -151,9 +155,8 @@ const ShareButton = styled.button`
   align-items: center;
   text-transform: uppercase;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0.3);
-  width: 80%;
+  padding: 12px 20px;
   font-size: 20px;
-  height: 52px;
   -webkit-filter: brightness(100%);
   filter: brightness(100%);
 
@@ -191,14 +194,10 @@ function Stat({ value, label }: { value: number | string; label: string }) {
 
 function TimeStats() {
   const avgTime = useRecoilValue(averageTime);
-  const today = useRecoilValue(todaysTime);
   return (
     <>
       {!!avgTime && (
         <Stat value={clockDisplayForSeconds(avgTime)} label="Average Time" />
-      )}
-      {!!today && (
-        <Stat value={clockDisplayForSeconds(today)} label="Today's Time" />
       )}
     </>
   );
@@ -245,6 +244,7 @@ function Stats() {
               <Icon icon="share" />
             </ShareButton>
           </Share>
+          <TodaysTime />
         </Footer>
       )}
     </Container>
@@ -308,12 +308,12 @@ function CountdownTimer() {
   }
 
   return (
-    <Countdown>
+    <div>
       <H1>Next WORDLE</H1>
       <StatContainer>
         <StatDiv className="timer">{clockDisplayForSeconds(count)}</StatDiv>
       </StatContainer>
-    </Countdown>
+    </div>
   );
 }
 
@@ -327,8 +327,20 @@ function CountupTimer() {
     return null;
   }
   return (
-    <div style={{ flexGrow: 1 }}>
+    <div>
       <H1>Played Today</H1>
+      <StatContainer>
+        <StatDiv className="timer">{clockDisplayForSeconds(time)}</StatDiv>
+      </StatContainer>
+    </div>
+  );
+}
+
+function TodaysTime() {
+  const time = useRecoilValue(todaysTime);
+  return (
+    <div>
+      <H1>Today&apos;s Time</H1>
       <StatContainer>
         <StatDiv className="timer">{clockDisplayForSeconds(time)}</StatDiv>
       </StatContainer>
