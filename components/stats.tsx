@@ -323,7 +323,7 @@ function CountupTimer() {
   }
   return (
     <div>
-      <H1>Played Today</H1>
+      <H1>Today&apos;s Time</H1>
       <StatContainer>
         <StatDiv className="timer">{clockDisplayForSeconds(time)}</StatDiv>
       </StatContainer>
