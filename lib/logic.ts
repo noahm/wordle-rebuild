@@ -1,9 +1,11 @@
 import type { Snapshot } from "recoil";
 import {
   evaluations,
+  extremeMode,
   firstWords,
   guessedWords,
   hardMode,
+  keyEvaluations,
   rowIndex,
   wordInProgress,
 } from "./state";
@@ -140,26 +142,36 @@ export async function getErrorForGuess(s: Snapshot): Promise<false | string> {
         return `Guess must contain ${prevLetter.toUpperCase()}`;
       }
     }
-    // must use discovered presents in new locations
-    for (let guessIdx = 0; guessIdx < pastGuesses.length; guessIdx++) {
-      const pastGuess = pastGuesses[guessIdx];
-      const pastEvals = pastEvalSets[guessIdx];
-      if (!pastEvals) {
-        continue;
-      }
-      for (let letterIdx = 0; letterIdx < 5; letterIdx++) {
-        const evaluation = pastEvals[letterIdx];
-        if (evaluation === "present") {
-          // check that this letter isn't being repeated in this location
-          if (pastGuess[letterIdx] === currentInput[letterIdx]) {
-            return `${currentInput[
-              letterIdx
-            ].toUpperCase()} can't be the ${getOrdinal(letterIdx + 1)} letter`;
+    if (await s.getPromise(extremeMode)) {
+      // must use discovered presents in new locations
+      for (let guessIdx = 0; guessIdx < pastGuesses.length; guessIdx++) {
+        const pastGuess = pastGuesses[guessIdx];
+        const pastEvals = pastEvalSets[guessIdx];
+        if (!pastEvals) {
+          continue;
+        }
+        for (let letterIdx = 0; letterIdx < 5; letterIdx++) {
+          const evaluation = pastEvals[letterIdx];
+          if (evaluation === "present") {
+            // check that this letter isn't being repeated in this location
+            if (pastGuess[letterIdx] === currentInput[letterIdx]) {
+              return `${currentInput[
+                letterIdx
+              ].toUpperCase()} can't be the ${getOrdinal(
+                letterIdx + 1
+              )} letter`;
+            }
           }
         }
       }
+      // must not use revealed absent letters
+      const pastEvalsByLetter = await s.getPromise(keyEvaluations);
+      for (const letter of currentInput) {
+        if (pastEvalsByLetter.get(letter) === "absent") {
+          return `Word does not contain ${letter.toUpperCase()}`;
+        }
+      }
     }
-    // TODO (maybe?) must not use absent
   }
 
   return false;
