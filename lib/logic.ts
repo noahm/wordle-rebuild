@@ -10,7 +10,7 @@ import {
   wordInProgress,
 } from "./state";
 import { CountingSet } from "./utils/counting-set";
-import { dictionary, wotd } from "./words";
+import { dictionary } from "./words";
 
 export type Evaluation = "correct" | "present" | "absent";
 
@@ -40,36 +40,6 @@ export function evaluateWord(target: string, guess: string) {
   }
   return ret;
 }
-
-const firstDay = new Date(2021, 5, 19, 0, 0, 0, 0);
-
-function timeAtMidnight(d: Date) {
-  return new Date(d).setHours(0, 0, 0, 0);
-}
-
-export function getDayDifference(a: Date, b: Date) {
-  return Math.round((timeAtMidnight(b) - timeAtMidnight(a)) / 864e5);
-}
-
-function getPuzzleIndexForDate(d: Date) {
-  return getDayDifference(firstDay, d);
-}
-
-function getSolutionForPuzzleNumber(num: number) {
-  const idx = num % wotd.length;
-  return wotd[idx];
-}
-
-function nextWordleDate() {
-  const ret = new Date();
-  ret.setDate(ret.getDate() + 1);
-  ret.setHours(0, 0, 0, 0);
-  return ret;
-}
-
-export const nextWordle = nextWordleDate();
-export const puzzleIndex = getPuzzleIndexForDate(new Date());
-export const solution = getSolutionForPuzzleNumber(puzzleIndex);
 
 const feedback = [
   "Lucker Dog",
@@ -155,11 +125,9 @@ export async function getErrorForGuess(s: Snapshot): Promise<false | string> {
           if (evaluation === "present") {
             // check that this letter isn't being repeated in this location
             if (pastGuess[letterIdx] === currentInput[letterIdx]) {
-              return `${currentInput[
-                letterIdx
-              ].toUpperCase()} can't be the ${getOrdinal(
+              return `${getOrdinal(
                 letterIdx + 1
-              )} letter`;
+              )} letter must not be ${currentInput[letterIdx].toUpperCase()}`;
             }
           }
         }

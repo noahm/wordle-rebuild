@@ -4,12 +4,8 @@ import useShowHelp from "../components/help";
 import useShowStats from "../components/stats";
 import { useShowToast } from "../components/toast";
 import { applyLegacyState } from "./legacyState";
-import {
-  feedbackForWin,
-  getDayDifference,
-  getErrorForGuess,
-  solution,
-} from "./logic";
+import { feedbackForWin, getErrorForGuess } from "./logic";
+import { getDayDifference, solution } from "./days";
 import {
   guessedWord,
   wordInProgress,
@@ -115,7 +111,8 @@ export function useGameDispatch() {
               set(guessedWord(idx), currentInput);
               set(wordInProgress, "");
               set(lastPlayedTs, now);
-              const isWin = currentInput === solution;
+              const todaysSolution = get(solution);
+              const isWin = currentInput === todaysSolution;
               const numGuesses = idx + 1;
               if (isWin) {
                 set(liveRowFeedback, "win");
@@ -123,7 +120,9 @@ export function useGameDispatch() {
                 setTimeout(() => showStats(), 4000);
                 updateStats({ isWin, numGuesses }, tx);
               } else if (idx === 5) {
-                setTimeout(() => showToast(solution.toUpperCase(), Infinity));
+                setTimeout(() =>
+                  showToast(todaysSolution.toUpperCase(), Infinity)
+                );
                 updateStats({ isWin, numGuesses }, tx);
               }
             });

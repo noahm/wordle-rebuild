@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import styled, { css } from "styled-components";
-import { puzzleIndex } from "../lib/logic";
+import { puzzleIndex } from "../lib/days";
 import {
   colorBlind,
   displayDarkTheme,
@@ -63,6 +63,7 @@ export default function useShowSettings() {
 }
 
 function Settings() {
+  const index = useRecoilValue(puzzleIndex);
   const hardModeLocked = useRecoilValue(lockHardMode);
   const showToast = useShowToast();
   const handleIllegalHardToggle = useCallback(() => {
@@ -131,7 +132,7 @@ function Settings() {
       </div>
       <Footnote>
         <div>Reforged 2022. No Rights Assumed.</div>
-        <div>#{puzzleIndex}</div>
+        <div>#{index}</div>
       </Footnote>
     </>
   );

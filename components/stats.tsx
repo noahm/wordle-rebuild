@@ -3,7 +3,7 @@ import { RecoilValue, useRecoilValue, useSetRecoilState } from "recoil";
 import { useCountdown, useCounter, useIntervalWhen } from "rooks";
 import styled from "styled-components";
 import { useGameDispatch } from "../lib/actions";
-import { nextWordle } from "../lib/logic";
+import { nextWordleDate } from "../lib/days";
 import {
   firstPlayedTs,
   gameStatus,
@@ -298,7 +298,8 @@ function DistributionGraphs() {
 const reload = () => location.reload();
 
 function CountdownTimer() {
-  const count = useCountdown(nextWordle) - 1;
+  const nextDate = useRecoilValue(nextWordleDate);
+  const count = useCountdown(nextDate) - 1;
   if (count < 0) {
     return (
       <Share>

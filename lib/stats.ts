@@ -1,5 +1,5 @@
 import { atom, selector, TransactionInterface_UNSTABLE } from "recoil";
-import { getDayDifference } from "./logic";
+import { getDayDifference } from "./days";
 import { firstPlayedTs } from "./state";
 import { persistAsSubkeyOf, persistStandalone } from "./storage";
 

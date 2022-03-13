@@ -1,5 +1,6 @@
 import { atom, atomFamily, selector, selectorFamily } from "recoil";
-import { evaluateWord, Evaluation, puzzleIndex, solution } from "./logic";
+import { puzzleIndex, solution } from "./days";
+import { evaluateWord, Evaluation } from "./logic";
 import { persistStandalone } from "./storage";
 import { clockDisplayForSeconds, squareForEval, times } from "./utils";
 
@@ -23,7 +24,7 @@ export const gameStatus = selector<GAME_STATUS>({
   key: "gameStatus",
   get: ({ get }) => {
     const guesses = get(guessedWords);
-    if (guesses.some((word) => word === solution)) {
+    if (guesses.some((word) => word === get(solution))) {
       return "WIN";
     }
     if (guesses[5]) {
@@ -92,7 +93,7 @@ export const evaluation = selectorFamily({
       if (!word) {
         return null;
       }
-      return evaluateWord(solution, word);
+      return evaluateWord(get(solution), word);
     },
 });
 
@@ -290,6 +291,6 @@ export const shareMessage = selector<string>({
         return prev;
       }
       return prev.concat("\n", rowEval.map(getSquare).join(""));
-    }, `Wordle* ${puzzleIndex} ${state === "WIN" ? idx : "X"}/6${difficultyMarker} in ${time}\n`);
+    }, `Wordle* ${get(puzzleIndex)} ${state === "WIN" ? idx : "X"}/6${difficultyMarker} in ${time}\n`);
   },
 });
