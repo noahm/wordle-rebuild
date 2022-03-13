@@ -175,6 +175,9 @@ export const todaysTime = selector({
       return 0;
     }
     const firstPlayed = get(firstPlayedTs);
+    if (!firstPlayed) {
+      return 0;
+    }
     const lastPlayed = get(lastPlayedTs);
     return Math.round((lastPlayed - firstPlayed) / 1000);
   },
