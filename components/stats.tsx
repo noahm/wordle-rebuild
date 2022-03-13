@@ -1,18 +1,24 @@
 import { useCallback } from "react";
 import { RecoilValue, useRecoilValue, useSetRecoilState } from "recoil";
-import { useCountdown } from "rooks";
+import { useCountdown, useCounter, useIntervalWhen } from "rooks";
 import styled from "styled-components";
 import { useGameDispatch } from "../lib/actions";
 import { nextWordle } from "../lib/logic";
-import { gameStatus, winningGuessCount } from "../lib/state";
 import {
+  firstPlayedTs,
+  gameStatus,
+  todaysTime,
+  winningGuessCount,
+} from "../lib/state";
+import {
+  averageTime,
   currentStreak,
   gamesPlayed,
   guesses,
   maxStreak,
   winPercentage,
 } from "../lib/stats";
-import { times } from "../lib/utils";
+import { clockDisplayForSeconds, times } from "../lib/utils";
 import Icon from "./icon";
 import { modalState } from "./modal";
 
@@ -115,20 +121,24 @@ const NumGuesses = styled.div`
 const Footer = styled.div`
   display: flex;
   width: 100%;
-`;
+  justify-content: stretch;
 
-const Countdown = styled.div`
-  border-right: 1px solid var(--color-tone-1);
-  padding-right: 12px;
-  width: 50%;
+  & > * {
+    flex-grow: 1;
+  }
+  & > *:not(:last-child) {
+    border-right: 1px solid var(--color-tone-1);
+    padding-right: 12px;
+  }
+  & > *:not(:first-child) {
+    padding-left: 12px;
+  }
 `;
 
 const Share = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  padding-left: 12px;
-  width: 50%;
 `;
 
 const ShareButton = styled.button`
@@ -145,9 +155,8 @@ const ShareButton = styled.button`
   align-items: center;
   text-transform: uppercase;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0.3);
-  width: 80%;
+  padding: 12px 20px;
   font-size: 20px;
-  height: 52px;
   -webkit-filter: brightness(100%);
   filter: brightness(100%);
 
@@ -162,19 +171,35 @@ const ShareButton = styled.button`
   }
 `;
 
-function Stat({
+function RecoilStat({
   source,
   label,
 }: {
   source: RecoilValue<number>;
   label: string;
+  format?: (n: number) => number | string;
 }) {
   const n = useRecoilValue(source);
+  return <Stat value={n} label={label} />;
+}
+
+function Stat({ value, label }: { value: number | string; label: string }) {
   return (
     <StatContainer>
-      <StatDiv>{n}</StatDiv>
+      <StatDiv>{value}</StatDiv>
       <StatLabel>{label}</StatLabel>
     </StatContainer>
+  );
+}
+
+function TimeStats() {
+  const avgTime = useRecoilValue(averageTime);
+  return (
+    <>
+      {!!avgTime && (
+        <Stat value={clockDisplayForSeconds(avgTime)} label="Average Time" />
+      )}
+    </>
   );
 }
 
@@ -196,16 +221,21 @@ function Stats() {
     <Container>
       <H1>Statistics</H1>
       <Statistics>
-        <Stat source={gamesPlayed} label="Played" />
-        <Stat source={winPercentage} label="Won %" />
-        <Stat source={currentStreak} label="Current Streak" />
-        <Stat source={maxStreak} label="Max Streak" />
+        <RecoilStat source={gamesPlayed} label="Played" />
+        <RecoilStat source={winPercentage} label="Won %" />
+        <RecoilStat source={currentStreak} label="Current Streak" />
+        <RecoilStat source={maxStreak} label="Max Streak" />
+        <TimeStats />
       </Statistics>
       <H1>Guess Distribution</H1>
       <Distributions>
         {hasStats ? <DistributionGraphs /> : <NoData>No Data</NoData>}
       </Distributions>
-      {state !== "IN_PROGRESS" && (
+      {state === "IN_PROGRESS" ? (
+        <Footer>
+          <CountupTimer />
+        </Footer>
+      ) : (
         <Footer>
           <CountdownTimer />
           <Share>
@@ -214,6 +244,7 @@ function Stats() {
               <Icon icon="share" />
             </ShareButton>
           </Share>
+          <TodaysTime />
         </Footer>
       )}
     </Container>
@@ -264,11 +295,6 @@ function DistributionGraphs() {
   );
 }
 
-/** zero pad */
-function zp(n: number) {
-  return n.toString().padStart(2, "0");
-}
-
 const reload = () => location.reload();
 
 function CountdownTimer() {
@@ -280,17 +306,47 @@ function CountdownTimer() {
       </Share>
     );
   }
-  const hours = Math.floor((count % 86400) / 3600);
-  const minutes = zp(Math.floor((count % 3600) / 60));
-  const seconds = zp(count % 60);
+
   return (
-    <Countdown>
+    <div>
       <H1>Next WORDLE</H1>
       <StatContainer>
-        <StatDiv className="timer">
-          {hours}:{minutes}:{seconds}
-        </StatDiv>
+        <StatDiv className="timer">{clockDisplayForSeconds(count)}</StatDiv>
       </StatContainer>
-    </Countdown>
+    </div>
+  );
+}
+
+function CountupTimer() {
+  const firstPlay = useRecoilValue(firstPlayedTs);
+  const { increment, value: time } = useCounter(
+    Math.round((Date.now() - firstPlay) / 1000)
+  );
+  useIntervalWhen(increment, 1000, !!firstPlay);
+  if (!firstPlay) {
+    return null;
+  }
+  return (
+    <div>
+      <H1>Played Today</H1>
+      <StatContainer>
+        <StatDiv className="timer">{clockDisplayForSeconds(time)}</StatDiv>
+      </StatContainer>
+    </div>
+  );
+}
+
+function TodaysTime() {
+  const time = useRecoilValue(todaysTime);
+  if (!time) {
+    return null;
+  }
+  return (
+    <div>
+      <H1>Today&apos;s Time</H1>
+      <StatContainer>
+        <StatDiv className="timer">{clockDisplayForSeconds(time)}</StatDiv>
+      </StatContainer>
+    </div>
   );
 }
