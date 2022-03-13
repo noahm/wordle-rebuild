@@ -3,7 +3,6 @@ import { ResetRecoilState, useRecoilCallback, useSetRecoilState } from "recoil";
 import useShowHelp from "../components/help";
 import useShowStats from "../components/stats";
 import { useShowToast } from "../components/toast";
-import { applyLegacyState } from "./legacyState";
 import { feedbackForWin, getErrorForGuess } from "./logic";
 import { getDayDifference, solution } from "./days";
 import {
@@ -61,9 +60,6 @@ export function useGameDispatch() {
         const state = await snapshot.getPromise(gameStatus);
         switch (action.type) {
           case "boot":
-            if (applyLegacyState(transact_UNSTABLE, resetStaleState)) {
-              return;
-            }
             transact_UNSTABLE(({ get, reset }) => {
               const lastPlayed = get(lastPlayedTs);
 
