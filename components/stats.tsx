@@ -121,17 +121,11 @@ const NumGuesses = styled.div`
 const Footer = styled.div`
   display: flex;
   width: 100%;
-  justify-content: stretch;
+  justify-content: space-around;
+  flex-wrap: wrap;
 
   & > * {
     flex-grow: 1;
-  }
-  & > *:not(:last-child) {
-    border-right: 1px solid var(--color-tone-1);
-    padding-right: 12px;
-  }
-  & > *:not(:first-child) {
-    padding-left: 12px;
   }
 `;
 
