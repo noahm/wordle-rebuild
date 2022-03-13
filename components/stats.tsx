@@ -338,6 +338,9 @@ function CountupTimer() {
 
 function TodaysTime() {
   const time = useRecoilValue(todaysTime);
+  if (!time) {
+    return null;
+  }
   return (
     <div>
       <H1>Today&apos;s Time</H1>
