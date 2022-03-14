@@ -96,18 +96,19 @@ export function useGameDispatch() {
             }
             const idx = await snapshot.getPromise(rowIndex);
             const now = Date.now();
+            const isHardMode = await snapshot.getPromise(hardMode);
+            const todaysSolution = await snapshot.getPromise(solution);
             transact_UNSTABLE((tx) => {
-              const { set, get } = tx;
+              const { set } = tx;
               if (idx === 0) {
                 set(firstPlayedTs, now);
-                if (get(hardMode)) {
+                if (isHardMode) {
                   set(firstWords, (previous) => [...previous, currentInput]);
                 }
               }
               set(guessedWord(idx), currentInput);
               set(wordInProgress, "");
               set(lastPlayedTs, now);
-              const todaysSolution = get(solution);
               const isWin = currentInput === todaysSolution;
               const numGuesses = idx + 1;
               if (isWin) {
