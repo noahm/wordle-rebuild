@@ -19,7 +19,7 @@ interface Truth {
 }
 
 function buildSnapshot(truth: Truth) {
-  return snapshot_UNSTABLE(({ set }) => {
+  const s = snapshot_UNSTABLE(({ set }) => {
     set(today, new Date(2022, 2, 13));
     truth.guess && set(wordInProgress, truth.guess);
     if (truth.pastGuess)
@@ -28,6 +28,9 @@ function buildSnapshot(truth: Truth) {
     set(extremeMode, !!truth.extremeMode);
     if (truth.firstWords) set(firstWords, truth.firstWords);
   });
+  // s.getPromise(solution).then(console.log);
+  // s.getPromise(keyEvaluations).then(console.log);
+  return s;
 }
 
 function getErrorFeedback(truth: Truth) {
@@ -89,6 +92,16 @@ describe("hard mode", () => {
 });
 
 describe("extreme mode", () => {
+  it("accepts guesses that reuse a single letter out of a previous double guess", async () => {
+    await expect(
+      getErrorFeedback({
+        guess: "copes",
+        hardMode: true,
+        extremeMode: true,
+        pastGuess: ["drool"],
+      })
+    ).resolves.toBe(false);
+  });
   it("rejects guesses that reuse present letters in previous positions", async () => {
     await expect(
       getErrorFeedback({

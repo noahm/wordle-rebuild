@@ -1,6 +1,6 @@
 import { atom, atomFamily, selector, selectorFamily } from "recoil";
 import { puzzleIndex, solution } from "./days";
-import { evaluateWord, Evaluation } from "./logic";
+import { evaluateWord, Evaluation, isBetterEval } from "./logic";
 import { persistStandalone } from "./storage";
 import { clockDisplayForSeconds, squareForEval, times } from "./utils";
 
@@ -146,7 +146,7 @@ export const keyEvaluations = selector({
         const letter = word[letterIndex];
         const letterEval = wordEval[letterIndex];
         const previousEval = ret.get(letter);
-        if (previousEval !== "correct") {
+        if (isBetterEval(previousEval, letterEval)) {
           ret.set(letter, letterEval);
         }
       }

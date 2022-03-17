@@ -1,4 +1,5 @@
 import type { Snapshot } from "recoil";
+import { solution } from "./days";
 import {
   evaluations,
   extremeMode,
@@ -13,6 +14,22 @@ import { CountingSet } from "./utils/counting-set";
 import { dictionary } from "./words";
 
 export type Evaluation = "correct" | "present" | "absent";
+
+export function isBetterEval(
+  curr: Evaluation | undefined,
+  next: Evaluation | undefined
+) {
+  switch (curr) {
+    case "correct":
+      return false;
+    case "present":
+      return next === "correct";
+    case "absent":
+      return next && next !== "absent";
+    default:
+      return !!next;
+  }
+}
 
 export function evaluateWord(target: string, guess: string) {
   let ret: Evaluation[] = [];
@@ -133,9 +150,16 @@ export async function getErrorForGuess(s: Snapshot): Promise<false | string> {
         }
       }
       // must not use revealed absent letters
+      const target = await s.getPromise(solution);
+      const newFeedback = evaluateWord(target, currentInput);
       const pastEvalsByLetter = await s.getPromise(keyEvaluations);
-      for (const letter of currentInput) {
-        if (pastEvalsByLetter.get(letter) === "absent") {
+      for (let idx = 0; idx < newFeedback.length; idx++) {
+        const letter = currentInput[idx];
+        const feedback = newFeedback[idx];
+        if (
+          feedback === "absent" &&
+          pastEvalsByLetter.get(letter) === "absent"
+        ) {
           return `Word does not contain ${letter.toUpperCase()}`;
         }
       }
