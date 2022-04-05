@@ -61,9 +61,10 @@ export function useGameDispatch() {
         switch (action.type) {
           case "boot":
             transact_UNSTABLE(({ get, reset }) => {
+              const lastPlayed = get(lastPlayedTs);
               const firstPlayed = get(firstPlayedTs);
 
-              if (firstPlayed) {
+              if (lastPlayed) {
                 if (getDayDifference(new Date(firstPlayed), new Date()) >= 1) {
                   // current state is from previous day, must reset
                   resetStaleState(reset);
