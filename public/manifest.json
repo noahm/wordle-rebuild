@@ -1,6 +1,7 @@
 {
   "short_name": "Wordle*",
   "name": "Wordle*",
+  "description": "A familiar daily word game with tiny tweaks all over",
   "icons": [
     {
       "src": "/wordle_logo_48x48.png",
@@ -38,9 +39,9 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": "https://wordle-with-friends.vercel.app/",
-  "background_color": "#6aaa64",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "theme_color": "#6aaa64",
-  "description": "A daily word game"
+  "background_color": "#6aaa64",
+  "theme_color": "#6aaa64"
 }
